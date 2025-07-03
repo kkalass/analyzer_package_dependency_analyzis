@@ -90,7 +90,8 @@ dev_dependencies:
 
         final result = readPubspec(yamlContent);
 
-        expect(result, equals('^6.0.0'));
+        expect(result, isNotNull);
+        expect(result!.analyzerVersion, equals('^6.0.0'));
       },
     );
 
@@ -105,7 +106,8 @@ dev_dependencies:
 
       final result = readPubspec(yamlContent);
 
-      expect(result, isNull);
+      expect(result, isNotNull);
+      expect(result!.analyzerVersion, isNull);
     });
 
     test('returns null for invalid YAML content', () {
@@ -127,13 +129,16 @@ dev_dependencies:
     test('handles analyzer version as number', () {
       const yamlContent = '''
 name: example_package
+version: 1.2.3
 dependencies:
   analyzer: 6.2.0
 ''';
 
       final result = readPubspec(yamlContent);
 
-      expect(result, equals('6.2.0'));
+      expect(result, isNotNull);
+      expect(result!.analyzerVersion, equals('6.2.0'));
+      expect(result.version, equals('1.2.3'));
     });
   });
 }
