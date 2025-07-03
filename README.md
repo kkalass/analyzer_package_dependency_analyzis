@@ -14,6 +14,7 @@ A command-line application that fetches and analyzes pub.dev packages that depen
 - **Resume Capability**: Interrupted operations can be resumed from where they left off
 - **Data Export**: CSV export functionality for further analysis
 - **Progress Tracking**: Real-time status monitoring of search and fetch operations
+- **Data Analysis**: Jupyter notebook for comprehensive analysis and visualization of collected data
 
 ## Architecture
 
@@ -23,6 +24,7 @@ The application follows clean architecture principles with clear separation of c
 - **Service Layer** (`lib/package_data_service.dart`): Clean abstraction for data operations
 - **Business Logic** (`lib/console.dart`): Core functionality for package analysis
 - **CLI Interface** (`bin/console.dart`): Command-line interface with multiple commands
+- **Data Analysis** (`analyzer_version_analysis.ipynb`): Jupyter notebook for data analysis and visualization
 
 ## Installation
 
@@ -79,6 +81,12 @@ dart run bin/console.dart help
    dart run bin/console.dart list
    ```
 
+5. **Analyze the data** (optional):
+   ```bash
+   # Open the Jupyter notebook for detailed analysis
+   jupyter notebook analyzer_version_analysis.ipynb
+   ```
+
 ## Data Structure
 
 The tool collects and stores the following information for each package:
@@ -99,6 +107,11 @@ The tool collects and stores the following information for each package:
 - **CSV Export**: Results are saved to `results/packages_export_<timestamp>.csv`
 - **Database**: Persistent storage in `db/packages.sqlite`
 - **Console**: Real-time progress and status information
+- **Analysis Notebook**: Jupyter notebook provides comprehensive data analysis including:
+  - Version distribution analysis of analyzer dependencies
+  - Package freshness categorization (recently updated vs. older packages)
+  - Visualization of dependency patterns and trends
+  - Direct vs. indirect dependency identification
 
 ## Resumable Operations
 
@@ -145,3 +158,20 @@ Key dependencies include:
 - `drift`: Type-safe SQLite database ORM
 - `yaml`: YAML parsing for pubspec.yaml files
 - `http`: HTTP client for repository access
+
+## Data Analysis
+
+The included Jupyter notebook (`analyzer_version_analysis.ipynb`) provides comprehensive analysis capabilities:
+
+- **Version Distribution**: Categorizes packages by analyzer version ranges (< 7.0, 7.0-7.3, ≥ 7.4)
+- **Package Freshness Analysis**: Distinguishes between recently updated packages vs. older packages
+- **Dependency Type Classification**: Identifies direct vs. indirect analyzer dependencies
+- **Visualization**: Charts and graphs showing distribution patterns and trends
+
+To use the analysis notebook:
+
+1. Ensure you have Jupyter installed: `pip install jupyter pandas matplotlib seaborn`
+2. Export your data: `dart run bin/console.dart csv`
+3. Open the notebook: `jupyter notebook analyzer_version_analysis.ipynb`
+4. Update the CSV file path in the notebook to match your export file
+5. Run all cells to generate the analysis
