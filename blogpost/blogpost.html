@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unpacking Dart's Analyzer Dependencies</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Light gray background */
+            color: #333;
+        }
+        .container {
+            max-width: 960px;
+        }
+        .section-title {
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        canvas {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="container mx-auto p-4 md:p-8 bg-white shadow-lg rounded-lg my-8">
+        <!-- Header Banner -->
+        <div class="relative w-full h-64 md:h-80 rounded-lg overflow-hidden mb-8">
+            <img src="https://placehold.co/1200x400/A8DADC/2F4F4F?text=Powerful+Analysis+for+Dart+and+Flutter" alt="Dart Analyzer Banner" class="absolute inset-0 w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-75"></div>
+            <div class="absolute bottom-0 left-0 p-6 text-white">
+                <h1 class="text-3xl md:text-5xl font-bold leading-tight">Unpacking Dart's Analyzer Dependencies</h1>
+                <p class="text-lg md:text-xl mt-2">Navigating Version Compatibility in the Dart Ecosystem</p>
+            </div>
+        </div>
+
+        <p class="mb-6 text-lg leading-relaxed">
+            As a Dart or Flutter developer, you've likely encountered the powerful Dart analyzer, a cornerstone for static analysis, code completion, and error checking. This post, however, focuses specifically on the **`analyzer` package** – the library developers use to implement custom tooling, code generators (often with `build_runner`), and deep code introspection, rather than the general `dart analyze` command.
+        </p>
+        <p class="mb-6 text-lg leading-relaxed">
+            If you're like many, you might also be grappling with a common challenge: **how do you adopt the latest `analyzer` package versions when other crucial libraries or code generators in your ecosystem demand older, incompatible versions?** Is staying current a viable path, or are you "doomed" to stick with older setups?
+        </p>
+        <p class="mb-6 text-lg leading-relaxed">
+            We recently conducted an in-depth analysis of package dependencies on the Dart `analyzer` library, examining over 1200 packages. Our goal was to shed light on:
+        </p>
+        <ol class="list-decimal list-inside space-y-2 mb-8 text-lg leading-relaxed">
+            <li><strong>Analyzer Version Distribution:</strong> Which versions of the `analyzer` package are most prevalent across the ecosystem?</li>
+            <li><strong>Version Adoption by Package Age:</strong> Are actively maintained packages successfully upgrading to newer `analyzer` package versions, or are they also stuck?</li>
+            <li><strong>Direct vs. Indirect Dependencies:</strong> How many packages explicitly declare an `analyzer` package dependency versus those that rely on it indirectly?</li>
+        </ol>
+        <p class="mb-8 text-lg leading-relaxed">
+            Let's dive into the key findings to help you navigate these complex dependency waters!
+        </p>
+
+        <h2 class="text-3xl font-bold section-title mb-6">A Glimpse at the Data</h2>
+        <p class="mb-8 text-lg leading-relaxed">
+            Our analysis was based on a CSV export from a package dependency analysis tool, which identified packages by searching <a href="https://pub.dev" target="_blank" class="text-blue-600 hover:underline">pub.dev</a> for those that depend on the `analyzer` package. A significant initial observation was the presence of many missing values in the 'Analyzer Version' column, indicating a large number of indirect dependencies. This immediately points to a challenge in tracking and managing `analyzer` package versions across the ecosystem.
+        </p>
+
+        <h2 class="text-3xl font-bold section-title mb-6">The Analyzer Version Landscape</h2>
+        <p class="mb-4 text-lg leading-relaxed">
+            We categorized `analyzer` package versions into four main buckets:
+        </p>
+        <ul class="list-disc list-inside space-y-2 mb-6 text-lg leading-relaxed">
+            <li><strong>&lt; 7.0</strong>: Older versions, indicating potential legacy codebases or less active maintenance.</li>
+            <li><strong>7.0-7.3</strong>: A transitional range, representing adoption of recent, but not the very latest, `analyzer` package features.</li>
+            <li><strong>&ge; 7.4</strong>: The newest versions, suggesting active development and utilization of the latest `analyzer` package capabilities.</li>
+            <li><strong>No Direct Version</strong>: Packages that don't explicitly list an `analyzer` package dependency, likely inheriting it through other dependencies.</li>
+        </ul>
+        <p class="mb-4 text-lg leading-relaxed">
+            Here's how the packages stack up across the entire dataset:
+        </p>
+        <ul class="list-disc list-inside space-y-2 mb-6 text-lg leading-relaxed">
+            <li><strong>No Direct Version</strong>: 717 packages (56.9%)</li>
+            <li><strong>&lt; 7.0</strong>: 405 packages (32.2%)</li>
+            <li><strong>7.0-7.3</strong>: 95 packages (7.5%)</li>
+            <li><strong>&ge; 7.4</strong>: 42 packages (3.3%)</li>
+        </ul>
+        <p class="mb-8 text-lg leading-relaxed font-semibold">
+            Key Insight: A substantial majority of packages either don't declare a direct `analyzer` package version or are still on older versions. This immediately suggests a fragmented landscape, making it difficult for developers to consistently use the latest `analyzer` package.
+        </p>
+
+        <h3 class="text-2xl font-bold mb-4">Direct Analyzer Version Distribution by Package Age</h3>
+        <p class="mb-8 text-lg leading-relaxed">
+            To understand the true adoption of `analyzer` package versions, especially among packages that explicitly declare them, we split the data by package "freshness" (updated within the last 12 months vs. older). This helps us see if actively maintained projects are successfully upgrading:
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            <div class="flex justify-center">
+                <div class="w-full">
+                    <canvas id="analyzerVersionChartDirectUpdated"></canvas>
+                </div>
+            </div>
+            <div class="flex justify-center">
+                <div class="w-full">
+                    <canvas id="analyzerVersionChartDirectOlder"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="text-2xl font-bold mb-4">Examples by Category:</h3>
+        <ul class="list-disc list-inside space-y-2 mb-8 text-lg leading-relaxed">
+            <li><strong>No Direct Version:</strong> `meta_types_generator`, `tenon_flutter`, `codemetrics`</li>
+            <li><strong>&lt; 7.0:</strong> `hash_compare` (`^0.39.4`), `emmet` (`^1.1.0`), `dart_to_js_transpiler` (`^0.39.8`)</li>
+            <li><strong>7.0-7.3:</strong> `best_theme_generator` (`^7.0.0`), `test_filename_lint` (`^7.3.0`), `json_model_mapper_gen` (`^7.3.0`)</li>
+            <li><strong>&ge; 7.4:</strong> Examples include `pinto` (`^7.4.5`), `celest_cli` (`^7.4.0`), and `analysis_server_plugin` (`^8.0.0-0`).</li>
+        </ul>
+
+        <h2 class="text-3xl font-bold section-title mb-6">The Interplay: Analyzer Versions and Package Age</h2>
+        <p class="mb-4 text-lg leading-relaxed">
+            The most revealing insights emerge when we combine these two dimensions. This cross-tabulation shows the full picture of how `analyzer` package versions are distributed across both older and recently updated packages:
+        </p>
+
+        <div class="overflow-x-auto mb-8 rounded-lg shadow-md">
+            <table class="min-w-full bg-white border border-gray-200">
+                <thead>
+                    <tr class="bg-gray-100 text-left text-gray-600 uppercase text-sm leading-normal">
+                        <th class="py-3 px-6 border-b border-gray-200">Version Category</th>
+                        <th class="py-3 px-6 border-b border-gray-200">Older Package</th>
+                        <th class="py-3 px-6 border-b border-gray-200">Updated within the last 12 months</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-700 text-base font-light">
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-3 px-6 border-b border-gray-200 font-bold">7.0-7.3</td>
+                        <td class="py-3 px-6 border-b border-gray-200">3 (0.4%)</td>
+                        <td class="py-3 px-6 border-b border-gray-200">92 (16.3%)</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-3 px-6 border-b border-gray-200 font-bold">&lt; 7.0</td>
+                        <td class="py-3 px-6 border-b border-gray-200">253 (36.5%)</td>
+                        <td class="py-3 px-6 border-b border-gray-200">152 (26.9%)</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-3 px-6 border-b border-gray-200 font-bold">No Direct Version</td>
+                        <td class="py-3 px-6 border-b border-gray-200">438 (63.1%)</td>
+                        <td class="py-3 px-6 border-b border-gray-200">279 (49.4%)</td>
+                    </tr>
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-3 px-6 border-b border-gray-200 font-bold">&ge; 7.4</td>
+                        <td class="py-3 px-6 border-b border-gray-200">0 (0.0%)</td>
+                        <td class="py-3 px-6 border-b border-gray-200">42 (7.4%)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="text-sm text-gray-500 mb-8">*(Percentages are within each age category)*</p>
+
+        <h3 class="text-2xl font-bold mb-4">Package Count by Analyzer Version and Recency</h3>
+        <!-- Combined Analysis Stacked Bar Chart -->
+        <div class="mb-12 flex justify-center">
+            <div class="w-full md:w-2/3 lg:w-1/2">
+                <canvas id="combinedAnalysisChart"></canvas>
+            </div>
+        </div>
+
+        <h3 class="text-2xl font-bold mb-4">Key Takeaways from the Combined Analysis:</h3>
+        <ul class="list-disc list-inside space-y-2 mb-8 text-lg leading-relaxed">
+            <li><strong>Early Adoption of Latest Analyzer Versions:</strong> All 42 packages using the very latest `&ge; 7.4` `analyzer` package versions were "Updated within the last 12 months." This is expected given the recent release of these versions, and it confirms that a segment of the ecosystem is quick to adopt new `analyzer` package capabilities.</li>
+            <li><strong>Older Packages and Indirect Dependencies:</strong> A large proportion of "Older Packages" (63.1%) have "No Direct Version" specified, suggesting they might be passively inheriting older `analyzer` package versions, or simply haven't been updated to reflect newer dependency practices. This is a common source of hidden compatibility issues.</li>
+            <li><strong>Stuck in the Past:</strong> A significant number of "Older Packages" (36.5%) are explicitly tied to `&lt; 7.0` `analyzer` package versions. This group represents a segment of the ecosystem that may require focused effort to encourage updates, or might simply be abandoned, posing a challenge for those trying to use them with newer `analyzer` package versions.</li>
+            <li><strong>Mixed Bag for `&lt; 7.0`:</strong> While many older packages use `&lt; 7.0`, a notable portion of "Updated within the last 12 months" packages also fall into this category (26.9%). This could mean they are actively maintained but haven't yet prioritized upgrading their `analyzer` package dependency, or their specific use case doesn't require the latest features, *but they could still cause conflicts for your app*.</li>
+            <li><strong>Healthy Adoption of Recent Versions (7.0-7.3):</strong> A strong majority of packages in the `7.0-7.3` range are "Updated within the last 12 months" (16.3% of recently updated packages vs. only 0.4% of older packages). This indicates a healthy rate of adoption for these more recent versions among active projects, suggesting a viable path forward for some.</li>
+        </ul>
+
+        <h2 class="text-3xl font-bold section-title mb-6">Recommendations: Navigating Analyzer Version Compatibility</h2>
+        <p class="mb-4 text-lg leading-relaxed">
+            Given your experience with incompatible `analyzer` package versions, here are some actionable recommendations based on our findings:
+        </p>
+        <ul class="list-disc list-inside space-y-2 mb-8 text-lg leading-relaxed">
+            <li><strong>Prioritize Direct Dependencies:</strong> When choosing external packages, favor those that explicitly declare and actively update their `analyzer` package dependency to recent versions (`&ge; 7.0`, ideally `&ge; 7.4`). This indicates a commitment to staying current and reduces the likelihood of hidden conflicts.</li>
+            <li><strong>Evaluate Transitive Dependencies Carefully:</strong> Be aware that "No Direct Version" packages, especially older ones, can pull in outdated `analyzer` package versions indirectly. Tools like `flutter pub deps` can help you inspect your full dependency tree to identify potential conflicts early.</li>
+            <li><strong>Contribute to Ecosystem Health:</strong> If you rely on a package stuck on an older `analyzer` package version, consider contributing to its update. Even small pull requests to bump dependency versions can make a big difference.</li>
+            <li><strong>Isolate Analyzer-Dependent Code:</strong> For your own generators or libraries that heavily rely on the `analyzer` package, consider if you can design them to be more flexible with `analyzer` package versions, or provide clear version requirements to your users.</li>
+            <li><strong>The Future is Brighter, but Fragmented:</strong> The data shows that *actively maintained* packages are indeed moving towards newer `analyzer` package versions (`&ge; 7.0`). While the ecosystem still has a significant number of older and indirectly dependent packages, there's a clear trend among active projects. This suggests that while challenges exist, staying on the latest `analyzer` package versions is a viable, and increasingly supported, path for actively developed applications.</li>
+            <li><strong>When to Stick to Older Versions (Temporarily):</strong> If a critical, unmaintained dependency *absolutely* requires an older `analyzer` package version and cannot be replaced or updated, you might be forced to align your project's `analyzer` package version with it. However, view this as a temporary measure and actively seek alternatives or contribute to the older package's update.</li>
+        </ul>
+        <p class="mb-8 text-lg leading-relaxed">
+            By understanding these dynamics and making informed choices about your dependencies, you can better navigate the Dart `analyzer` package landscape and build robust, future-proof applications.
+        </p>
+    </div>
+
+    <script>
+        // Data for charts
+        // Removed analyzerVersionDataAll as per request
+
+        // Data for direct versions only, split by freshness
+        const analyzerVersionDirectUpdated = {
+            '< 7.0': 152,
+            '7.0-7.3': 92,
+            '≥ 7.4': 42
+        };
+
+        const analyzerVersionDirectOlder = {
+            '< 7.0': 253,
+            '7.0-7.3': 3,
+            '≥ 7.4': 0
+        };
+
+        // Removed packageFreshnessData and its chart as per request
+
+        const combinedAnalysisData = {
+            labels: ['7.0-7.3', '< 7.0', 'No Direct Version', '≥ 7.4'],
+            olderPackage: [3, 253, 438, 0],
+            recentlyUpdated: [92, 152, 279, 42]
+        };
+
+        // Function to generate consistent colors for charts
+        const chartColors = {
+            red: 'rgba(255, 99, 132, 0.7)',
+            blue: 'rgba(54, 162, 235, 0.7)',
+            yellow: 'rgba(255, 206, 86, 0.7)',
+            green: 'rgba(75, 192, 192, 0.7)',
+            purple: 'rgba(153, 102, 255, 0.7)',
+            orange: 'rgba(255, 159, 64, 0.7)'
+        };
+
+        const borderColors = {
+            red: 'rgba(255, 99, 132, 1)',
+            blue: 'rgba(54, 162, 235, 1)',
+            yellow: 'rgba(255, 206, 86, 1)',
+            green: 'rgba(75, 192, 192, 1)',
+            purple: 'rgba(153, 102, 255, 1)',
+            orange: 'rgba(255, 159, 64, 1)'
+        };
+
+        // Analyzer Version Pie Chart (Direct Versions Only - Updated within the last 12 months)
+        const ctxVersionDirectUpdated = document.getElementById('analyzerVersionChartDirectUpdated').getContext('2d');
+        new Chart(ctxVersionDirectUpdated, {
+            type: 'pie',
+            data: {
+                labels: Object.keys(analyzerVersionDirectUpdated),
+                datasets: [{
+                    data: Object.values(analyzerVersionDirectUpdated),
+                    backgroundColor: [
+                        chartColors.blue, // < 7.0
+                        chartColors.yellow, // 7.0-7.3
+                        chartColors.green   // >= 7.4
+                    ],
+                    borderColor: [
+                        borderColors.blue,
+                        borderColors.yellow,
+                        borderColors.green
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Direct Versions: Updated within the last 12 months',
+                        font: {
+                            size: 16
+                        }
+                    }
+                }
+            }
+        });
+
+        // Analyzer Version Pie Chart (Direct Versions Only - Older Packages)
+        const ctxVersionDirectOlder = document.getElementById('analyzerVersionChartDirectOlder').getContext('2d');
+        new Chart(ctxVersionDirectOlder, {
+            type: 'pie',
+            data: {
+                labels: Object.keys(analyzerVersionDirectOlder),
+                datasets: [{
+                    data: Object.values(analyzerVersionDirectOlder),
+                    backgroundColor: [
+                        chartColors.red, // < 7.0
+                        chartColors.purple, // 7.0-7.3
+                        chartColors.orange   // >= 7.4
+                    ],
+                    borderColor: [
+                        borderColors.red,
+                        borderColors.purple,
+                        borderColors.orange
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Direct Versions: Older Packages',
+                        font: {
+                            size: 16
+                        }
+                    }
+                }
+            }
+        });
+
+        // Removed Package Freshness Bar Chart creation as per request
+        /*
+        const ctxFreshness = document.getElementById('packageFreshnessChart').getContext('2d');
+        new Chart(ctxFreshness, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(packageFreshnessData),
+                datasets: [{
+                    label: 'Number of Packages',
+                    data: Object.values(packageFreshnessData),
+                    backgroundColor: [
+                        chartColors.purple,
+                        chartColors.orange
+                    ],
+                    borderColor: [
+                        borderColors.purple,
+                        borderColors.orange
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false,
+                    },
+                    title: {
+                        display: true,
+                        text: 'Package Freshness: Recently Updated vs. Older',
+                        font: {
+                            size: 18
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Packages'
+                        }
+                    }
+                }
+            }
+        });
+        */
+
+        // Combined Analysis Stacked Bar Chart (Package Count by Analyzer Version and Recency)
+        const ctxCombined = document.getElementById('combinedAnalysisChart').getContext('2d');
+        new Chart(ctxCombined, {
+            type: 'bar',
+            data: {
+                labels: combinedAnalysisData.labels,
+                datasets: [
+                    {
+                        label: 'Older Package',
+                        data: combinedAnalysisData.olderPackage,
+                        backgroundColor: chartColors.red,
+                        borderColor: borderColors.red,
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Updated within the last 12 months',
+                        data: combinedAnalysisData.recentlyUpdated,
+                        backgroundColor: chartColors.green,
+                        borderColor: borderColors.green,
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Package Count by Analyzer Version and Recency',
+                        font: {
+                            size: 18
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        title: {
+                            display: true,
+                            text: 'Analyzer Version Category'
+                        }
+                    },
+                    y: {
+                        stacked: true,
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Packages'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
