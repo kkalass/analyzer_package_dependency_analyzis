@@ -4,10 +4,13 @@ import 'package:pub_api_client/pub_api_client.dart';
 void main(List<String> arguments) async {
   final client = PubClient();
   //await listPackages(client);
-  
+
   // Fetch package data and store it in the database
-  final packageData = await fetchAndStorePackageData(client, 'postgres_prepared');
-  
+  final packageData = await fetchAndStorePackageData(
+    client,
+    'postgres_prepared',
+  );
+
   if (packageData != null) {
     print('Package Name: ${packageData.packageName}');
     print('Dev Analyzer Version: ${packageData.devAnalyzerVersion}');
@@ -16,7 +19,7 @@ void main(List<String> arguments) async {
     print('Published Date: ${packageData.publishedDate}');
     print('Published Version: ${packageData.publishedVersion}');
     print('Repository URL: ${packageData.repoUrl}');
-    
+
     print('\n--- Retrieving from database ---');
     // Demonstrate retrieving from database
     final storedData = await getStoredPackageData('postgres_prepared');
@@ -31,11 +34,9 @@ void main(List<String> arguments) async {
   }
 }
 
-Future<void> listPackages(PubClient client) async {
-  final results = await client.search(
+Future<SearchResults> listPackages(PubClient client) async {
+  return await client.search(
     'query',
     tags: [PackageTag.dependency('analyzer')],
   );
-  // Returns the packages that match the query
-  print(results.packages);
 }

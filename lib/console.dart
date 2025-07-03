@@ -145,7 +145,7 @@ PubspecInfo? readPubspec(String yamlContent) {
 }
 
 /// Fetches package data and stores it in the database
-/// 
+///
 /// This function combines fetching package data from the API with storing
 /// it in the local database for persistence and caching.
 Future<PackageData?> fetchAndStorePackageData(
@@ -154,11 +154,11 @@ Future<PackageData?> fetchAndStorePackageData(
   PackageDataService? service,
 }) async {
   final packageDataService = service ?? PackageDataService.create();
-  
+
   try {
     // Fetch the package data
     final packageData = await fetchPackageData(client, packageName);
-    
+
     if (packageData != null) {
       // Store the data in the database
       await packageDataService.storePackageData(
@@ -170,10 +170,10 @@ Future<PackageData?> fetchAndStorePackageData(
         publishedVersion: packageData.publishedVersion,
         repoUrl: packageData.repoUrl,
       );
-      
+
       print('Package data stored in database for: ${packageData.packageName}');
     }
-    
+
     return packageData;
   } finally {
     // Close the service if we created it locally
@@ -184,7 +184,7 @@ Future<PackageData?> fetchAndStorePackageData(
 }
 
 /// Retrieves package data from database by package name
-/// 
+///
 /// Provides a convenient way to access stored package data without
 /// needing to create a service instance.
 Future<PackageDataTableData?> getStoredPackageData(String packageName) async {
@@ -197,7 +197,7 @@ Future<PackageDataTableData?> getStoredPackageData(String packageName) async {
 }
 
 /// Lists all stored package data from the database
-/// 
+///
 /// Returns all package data entries ordered by creation date.
 Future<List<PackageDataTableData>> listAllStoredPackages() async {
   final service = PackageDataService.create();
