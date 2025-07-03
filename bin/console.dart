@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:console/console.dart';
 import 'package:console/package_data_service.dart';
 import 'package:pub_api_client/pub_api_client.dart';
@@ -16,6 +18,9 @@ void main(List<String> arguments) async {
       break;
     case 'list':
       await listStoredPackages();
+      break;
+    case 'csv':
+      await exportToCSV();
       break;
     case 'help':
     case '--help':
@@ -37,11 +42,13 @@ void printUsage() {
   print('Commands:');
   print('  fetch    Fetch and store all packages with analyzer dependency');
   print('  list     List all packages currently stored in the database');
+  print('  csv      Export all package data to a CSV file');
   print('  help     Show this help message');
   print('');
   print('Examples:');
   print('  dart run bin/console.dart fetch');
   print('  dart run bin/console.dart list');
+  print('  dart run bin/console.dart csv');
 }
 
 /// Performs the fetch operation to get all packages with analyzer dependency
@@ -174,6 +181,88 @@ Future<void> listStoredPackages() async {
   } finally {
     await service.close();
   }
+}
+
+/// Exports all package data to a CSV file
+Future<void> exportToCSV() async {
+  final service = PackageDataService.create();
+
+  try {
+    final allStored = await service.getAllPackageData();
+
+    if (allStored.isEmpty) {
+      print('No packages found in database.');
+      print(
+        'Run "dart run bin/console.dart fetch" to fetch package data first.',
+      );
+      return;
+    }
+
+    // Generate filename with timestamp
+    final timestamp =
+        DateTime.now().toIso8601String().replaceAll(':', '-').split('.')[0];
+    final filename = 'packages_export_$timestamp.csv';
+
+    // Prepare CSV content
+    final csvLines = <String>[];
+
+    // Add header
+    csvLines.add(
+      'Package Name,Analyzer Version,Dev Version,Dev Date,Published Date,Published Version,Repository URL,Created At,Updated At',
+    );
+
+    // Add data rows
+    for (final pkg in allStored) {
+      final row = [
+        _escapeCsvField(pkg.packageName),
+        _escapeCsvField(pkg.devAnalyzerVersion ?? ''),
+        _escapeCsvField(pkg.devVersion ?? ''),
+        _escapeCsvField(pkg.devDate.toIso8601String()),
+        _escapeCsvField(pkg.publishedDate?.toIso8601String() ?? ''),
+        _escapeCsvField(pkg.publishedVersion ?? ''),
+        _escapeCsvField(pkg.repoUrl ?? ''),
+        _escapeCsvField(pkg.createdAt.toIso8601String()),
+        _escapeCsvField(pkg.updatedAt.toIso8601String()),
+      ].join(',');
+
+      csvLines.add(row);
+    }
+
+    // Write to file
+    final csvContent = csvLines.join('\n');
+    final file = File(filename);
+    await file.writeAsString(csvContent);
+
+    print('✓ Exported ${allStored.length} packages to: $filename');
+
+    // Show summary statistics
+    final withAnalyzer =
+        allStored.where((p) => p.devAnalyzerVersion != null).length;
+    final withRepo = allStored.where((p) => p.repoUrl != null).length;
+
+    print('');
+    print('Export summary:');
+    print('  Total packages: ${allStored.length}');
+    print('  With analyzer dependency: $withAnalyzer');
+    print('  With repository URL: $withRepo');
+    print('  File size: ${(await file.length() / 1024).toStringAsFixed(1)} KB');
+  } catch (e) {
+    print('Error exporting to CSV: $e');
+  } finally {
+    await service.close();
+  }
+}
+
+/// Escapes a field for CSV format by wrapping in quotes if it contains special characters
+String _escapeCsvField(String field) {
+  // If field contains comma, quote, or newline, wrap in quotes and escape internal quotes
+  if (field.contains(',') ||
+      field.contains('"') ||
+      field.contains('\n') ||
+      field.contains('\r')) {
+    return '"${field.replaceAll('"', '""')}"';
+  }
+  return field;
 }
 
 Future<SearchResults> listPackages(PubClient client) async {
