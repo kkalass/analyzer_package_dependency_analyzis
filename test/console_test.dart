@@ -53,9 +53,10 @@ dev_dependencies:
   test: ^1.24.0
 ''';
 
-      final result = extractAnalyzerVersion(yamlContent);
+      final result = readPubspec(yamlContent);
 
-      expect(result, equals('^6.2.0'));
+      expect(result, isNotNull);
+      expect(result!.analyzerVersion, equals('^6.2.0'));
     });
 
     test('extracts analyzer version from dev_dependencies section', () {
@@ -68,9 +69,10 @@ dev_dependencies:
   test: ^1.24.0
 ''';
 
-      final result = extractAnalyzerVersion(yamlContent);
+      final result = readPubspec(yamlContent);
 
-      expect(result, equals('^7.4.5'));
+      expect(result, isNotNull);
+      expect(result!.analyzerVersion, equals('^7.4.5'));
     });
 
     test(
@@ -86,7 +88,7 @@ dev_dependencies:
   test: ^1.24.0
 ''';
 
-        final result = extractAnalyzerVersion(yamlContent);
+        final result = readPubspec(yamlContent);
 
         expect(result, equals('^6.0.0'));
       },
@@ -101,7 +103,7 @@ dev_dependencies:
   test: ^1.24.0
 ''';
 
-      final result = extractAnalyzerVersion(yamlContent);
+      final result = readPubspec(yamlContent);
 
       expect(result, isNull);
     });
@@ -109,7 +111,7 @@ dev_dependencies:
     test('returns null for invalid YAML content', () {
       const yamlContent = 'invalid: yaml: content: [';
 
-      final result = extractAnalyzerVersion(yamlContent);
+      final result = readPubspec(yamlContent);
 
       expect(result, isNull);
     });
@@ -117,7 +119,7 @@ dev_dependencies:
     test('returns null for non-map YAML content', () {
       const yamlContent = '- item1\n- item2';
 
-      final result = extractAnalyzerVersion(yamlContent);
+      final result = readPubspec(yamlContent);
 
       expect(result, isNull);
     });
@@ -129,7 +131,7 @@ dependencies:
   analyzer: 6.2.0
 ''';
 
-      final result = extractAnalyzerVersion(yamlContent);
+      final result = readPubspec(yamlContent);
 
       expect(result, equals('6.2.0'));
     });

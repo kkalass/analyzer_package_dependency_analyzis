@@ -4,24 +4,30 @@ import 'package:pub_api_client/pub_api_client.dart';
 void main(List<String> arguments) async {
   final client = PubClient();
   //await listPackages(client);
-  final details = await client.packageInfo('postgres_prepared');
-  final publishedDate = details.latest.published;
-
-  final info = await client.packageMetrics('postgres_prepared');
-  var repoUrl = info?.scorecard.panaReport?.result?.repositoryUrl;
-
-  if (repoUrl != null) {
-    final analyzerVersion = await downloadAndExtractAnalyzerVersion(repoUrl);
-
-    if (analyzerVersion != null) {
-      print(
-        'Analyzer version found: $analyzerVersion - Published on: $publishedDate',
-      );
-    } else {
-      print('Analyzer package not found in dependencies or dev_dependencies');
+  
+  // Fetch package data and store it in the database
+  final packageData = await fetchAndStorePackageData(client, 'postgres_prepared');
+  
+  if (packageData != null) {
+    print('Package Name: ${packageData.packageName}');
+    print('Dev Analyzer Version: ${packageData.devAnalyzerVersion}');
+    print('Dev Version: ${packageData.devVersion}');
+    print('Dev Date: ${packageData.devDate}');
+    print('Published Date: ${packageData.publishedDate}');
+    print('Published Version: ${packageData.publishedVersion}');
+    print('Repository URL: ${packageData.repoUrl}');
+    
+    print('\n--- Retrieving from database ---');
+    // Demonstrate retrieving from database
+    final storedData = await getStoredPackageData('postgres_prepared');
+    if (storedData != null) {
+      print('Stored Package: ${storedData.packageName}');
+      print('Stored Dev Analyzer Version: ${storedData.devAnalyzerVersion}');
+      print('Stored at: ${storedData.createdAt}');
+      print('Last updated: ${storedData.updatedAt}');
     }
   } else {
-    print('No repository URL found for package postgres_prepared');
+    print('No package data found for postgres_prepared');
   }
 }
 
