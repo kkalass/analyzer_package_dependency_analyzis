@@ -14,14 +14,28 @@ class PackageSearchStateTable extends Table {
   /// Primary key - search identifier (always 'analyzer_dependency')
   TextColumn get searchId => text()();
 
-  /// JSON encoded list of all discovered packages
+  /// JSON encoded list of all discovered packages so far
   TextColumn get allPackagesJson => text()();
 
-  /// Current processing index
+  /// Current pagination URL (next page to fetch)
+  TextColumn get nextPageUrl => text().nullable()();
+
+  /// Current page number being fetched
+  IntColumn get currentPage => integer().withDefault(const Constant(0))();
+
+  /// Current processing index for package processing
   IntColumn get currentIndex => integer().withDefault(const Constant(0))();
 
-  /// Total count of packages
+  /// Total count of packages discovered so far
   IntColumn get totalCount => integer()();
+
+  /// Whether package discovery is completed
+  BoolColumn get discoveryCompleted =>
+      boolean().withDefault(const Constant(false))();
+
+  /// Whether processing is completed
+  BoolColumn get processingCompleted =>
+      boolean().withDefault(const Constant(false))();
 
   /// Timestamp when search was started
   DateTimeColumn get searchStarted => dateTime()();
@@ -29,9 +43,6 @@ class PackageSearchStateTable extends Table {
   /// Timestamp when last updated
   DateTimeColumn get lastUpdated =>
       dateTime().withDefault(currentDateAndTime)();
-
-  /// Whether the search is completed
-  BoolColumn get isCompleted => boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column> get primaryKey => {searchId};
@@ -79,7 +90,7 @@ class PackageDatabase extends _$PackageDatabase {
   PackageDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -88,6 +99,11 @@ class PackageDatabase extends _$PackageDatabase {
     },
     onUpgrade: (Migrator m, int from, int to) async {
       if (from < 2) {
+        await m.createTable(packageSearchStateTable);
+      }
+      if (from < 3) {
+        // For simplicity, we'll recreate the table with new schema
+        await m.drop(packageSearchStateTable);
         await m.createTable(packageSearchStateTable);
       }
     },
@@ -123,7 +139,7 @@ class PackageDatabase extends _$PackageDatabase {
     )).write(PackageDataTableCompanion(updatedAt: Value(DateTime.now())));
   }
 
-  /// Saves or updates the package search state
+  /// Saves or updates the package search state (legacy method for compatibility)
   Future<void> saveSearchState({
     required String searchId,
     required String allPackagesJson,
@@ -140,7 +156,14 @@ class PackageDatabase extends _$PackageDatabase {
         totalCount: Value(totalCount),
         searchStarted: Value(searchStarted),
         lastUpdated: Value(DateTime.now()),
-        isCompleted: Value(isCompleted),
+        processingCompleted: Value(
+          isCompleted,
+        ), // Map old isCompleted to processingCompleted
+        discoveryCompleted: Value(
+          true,
+        ), // Assume discovery is complete if using old method
+        currentPage: Value(0), // Default value
+        nextPageUrl: const Value(null), // Default value
       ),
     );
   }
@@ -151,7 +174,7 @@ class PackageDatabase extends _$PackageDatabase {
       ..where((tbl) => tbl.searchId.equals(searchId))).getSingleOrNull();
   }
 
-  /// Updates the current processing index
+  /// Updates the current processing index (legacy method for compatibility)
   Future<void> updateSearchProgress(
     String searchId,
     int currentIndex, {
@@ -164,17 +187,97 @@ class PackageDatabase extends _$PackageDatabase {
 
     final finalUpdate =
         isCompleted != null
-            ? updateCompanion.copyWith(isCompleted: Value(isCompleted))
+            ? updateCompanion.copyWith(processingCompleted: Value(isCompleted))
             : updateCompanion;
 
     await (update(packageSearchStateTable)
       ..where((tbl) => tbl.searchId.equals(searchId))).write(finalUpdate);
   }
 
+  /// Updates pagination state for package discovery
+  Future<void> updatePaginationState({
+    required String searchId,
+    String? nextPageUrl,
+    int? currentPage,
+    bool? discoveryCompleted,
+    bool? processingCompleted,
+    String? allPackagesJson,
+  }) async {
+    final companion = PackageSearchStateTableCompanion(
+      lastUpdated: Value(DateTime.now()),
+    );
+
+    var updateCompanion = companion;
+    if (nextPageUrl != null) {
+      updateCompanion = updateCompanion.copyWith(
+        nextPageUrl: Value(nextPageUrl),
+      );
+    }
+    if (currentPage != null) {
+      updateCompanion = updateCompanion.copyWith(
+        currentPage: Value(currentPage),
+      );
+    }
+    if (discoveryCompleted != null) {
+      updateCompanion = updateCompanion.copyWith(
+        discoveryCompleted: Value(discoveryCompleted),
+      );
+    }
+    if (processingCompleted != null) {
+      updateCompanion = updateCompanion.copyWith(
+        processingCompleted: Value(processingCompleted),
+      );
+    }
+    if (allPackagesJson != null) {
+      updateCompanion = updateCompanion.copyWith(
+        allPackagesJson: Value(allPackagesJson),
+      );
+    }
+
+    await (update(packageSearchStateTable)
+      ..where((tbl) => tbl.searchId.equals(searchId))).write(updateCompanion);
+  }
+
+  /// Saves pagination progress during package discovery
+  Future<void> savePaginationProgress({
+    required String searchId,
+    required String allPackagesJson,
+    String? nextPageUrl,
+    required int currentPage,
+    required bool discoveryCompleted,
+  }) async {
+    await into(packageSearchStateTable).insertOnConflictUpdate(
+      PackageSearchStateTableCompanion(
+        searchId: Value(searchId),
+        allPackagesJson: Value(allPackagesJson),
+        nextPageUrl: Value(nextPageUrl),
+        currentPage: Value(currentPage),
+        discoveryCompleted: Value(discoveryCompleted),
+        processingCompleted: Value(false),
+        currentIndex: Value(
+          0,
+        ), // Reset processing index when updating pagination
+        totalCount: Value(0), // Will be set when processing starts
+        searchStarted: Value(DateTime.now()),
+        lastUpdated: Value(DateTime.now()),
+      ),
+    );
+  }
+
   /// Clears the search state
   Future<void> clearSearchState(String searchId) async {
     await (delete(packageSearchStateTable)
       ..where((tbl) => tbl.searchId.equals(searchId))).go();
+  }
+
+  /// Clears all search states
+  Future<void> clearAllSearchStates() async {
+    await delete(packageSearchStateTable).go();
+  }
+
+  /// Clears all package data
+  Future<void> clearAllPackageData() async {
+    await delete(packageDataTable).go();
   }
 }
 

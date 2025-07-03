@@ -75,62 +75,85 @@ Future<void> performFetch() async {
 
     List<SerializablePackage> allPackages;
     int startIndex = 0;
-    DateTime searchStarted;
 
-    if (existingState != null && !existingState.isCompleted) {
-      // Resume from existing state
-      print(
-        'Found existing search state. Resuming from index ${existingState.currentIndex}...',
-      );
-      final packagesJson = jsonDecode(existingState.allPackagesJson) as List;
-      allPackages =
-          packagesJson
-              .map(
-                (json) =>
-                    SerializablePackage.fromJson(json as Map<String, dynamic>),
-              )
-              .toList();
-      startIndex = existingState.currentIndex;
-      searchStarted = existingState.searchStarted;
-      print(
-        'Resuming processing of ${allPackages.length} packages from index $startIndex',
-      );
-    } else {
-      // Start fresh - fetch all packages and persist the list
-      print('Starting new search...');
-      searchStarted = DateTime.now();
-
-      try {
-        final packageResults = await fetchAllPackagesWithAnalyzerDependency(
-          client,
-        );
-        allPackages =
-            packageResults
-                .map((pkg) => SerializablePackage(pkg.package))
-                .toList();
-
+    if (existingState != null) {
+      // Check if we need to resume discovery or processing
+      if (!existingState.discoveryCompleted) {
         print(
-          'Found ${allPackages.length} packages total. Saving search state...',
+          'Resuming package discovery from page ${existingState.currentPage}...',
         );
 
-        // Save the initial search state
-        await service.saveSearchState(
+        // Continue discovering packages using pagination
+        allPackages =
+            (await fetchAllPackagesWithPagination(
+              client,
+              service,
+              searchId,
+            )).map((pkg) => SerializablePackage(pkg.package)).toList();
+
+        // Update state to mark discovery as complete and start processing
+        await service.updatePaginationState(
           searchId: searchId,
+          discoveryCompleted: true,
+          processingCompleted: false,
           allPackagesJson: jsonEncode(
             allPackages.map((pkg) => pkg.toJson()).toList(),
           ),
-          currentIndex: 0,
-          totalCount: allPackages.length,
-          searchStarted: searchStarted,
-          isCompleted: false,
         );
+
+        startIndex = 0; // Start processing from beginning
+      } else if (!existingState.processingCompleted) {
+        // Resume processing from where we left off
+        print(
+          'Resuming processing from index ${existingState.currentIndex}...',
+        );
+        final packagesJson = jsonDecode(existingState.allPackagesJson) as List;
+        allPackages =
+            packagesJson
+                .map(
+                  (json) => SerializablePackage.fromJson(
+                    json as Map<String, dynamic>,
+                  ),
+                )
+                .toList();
+        startIndex = existingState.currentIndex;
+      } else {
+        print('Fetch operation is already completed!');
+        print('Use "dart run bin/console.dart clear" to reset and start over.');
+        return;
+      }
+    } else {
+      // Start fresh - begin package discovery with pagination
+      print('Starting new package discovery...');
+
+      try {
+        allPackages =
+            (await fetchAllPackagesWithPagination(
+              client,
+              service,
+              searchId,
+            )).map((pkg) => SerializablePackage(pkg.package)).toList();
+
+        print(
+          'Discovery completed! Found ${allPackages.length} packages total.',
+        );
+
+        // Mark discovery as complete and prepare for processing
+        await service.updatePaginationState(
+          searchId: searchId,
+          discoveryCompleted: true,
+          processingCompleted: false,
+          allPackagesJson: jsonEncode(
+            allPackages.map((pkg) => pkg.toJson()).toList(),
+          ),
+        );
+
+        startIndex = 0;
       } catch (e) {
         if (e.toString().contains('rate limit')) {
+          print('Rate limit reached during package discovery.');
           print(
-            'Rate limit reached while fetching package list. Please wait a few minutes and try again.',
-          );
-          print(
-            'The search will be resumed automatically when you run fetch again.',
+            'Progress has been saved. Run fetch again to resume from where we left off.',
           );
           return;
         }
@@ -141,6 +164,12 @@ Future<void> performFetch() async {
     int processedCount = startIndex;
     int alreadyStoredCount = 0;
     int newlyFetchedCount = 0;
+
+    // Set the total count for processing if not already set
+    await service.updatePaginationState(
+      searchId: searchId,
+      processingCompleted: false,
+    );
 
     for (int i = startIndex; i < allPackages.length; i++) {
       final package = allPackages[i];
@@ -188,11 +217,10 @@ Future<void> performFetch() async {
       }
     }
 
-    // Mark as completed
-    await service.updateSearchProgress(
-      searchId,
-      allPackages.length,
-      isCompleted: true,
+    // Mark processing as completed
+    await service.updatePaginationState(
+      searchId: searchId,
+      processingCompleted: true,
     );
 
     print('\n--- Summary ---');
@@ -377,6 +405,185 @@ Future<List<PackageResult>> fetchAllPackagesWithAnalyzerDependency(
   return allPackages;
 }
 
+/// Fetches all packages with analyzer dependency using pagination with persistence
+///
+/// Iterates through all pages of search results to get the complete list
+/// of packages that depend on the analyzer package. Persists progress after each page
+/// so that the fetch can be resumed if interrupted.
+Future<List<PackageResult>> fetchAllPackagesWithPagination(
+  PubClient client,
+  PackageDataService service,
+  String searchId,
+) async {
+  // Check if we have existing state to resume from
+  final existingState = await service.getSearchState(searchId);
+
+  final allPackages = <PackageResult>[];
+  SearchResults? currentResults;
+  int pageCount = 0;
+
+  if (existingState != null && !existingState.discoveryCompleted) {
+    // Resume from existing pagination state
+    print(
+      'Resuming package discovery from page ${existingState.currentPage + 1}...',
+    );
+
+    // Restore previously discovered packages
+    final packagesJson = jsonDecode(existingState.allPackagesJson) as List;
+    final previousPackages =
+        packagesJson
+            .map(
+              (json) =>
+                  SerializablePackage.fromJson(json as Map<String, dynamic>),
+            )
+            .toList();
+
+    for (final pkg in previousPackages) {
+      allPackages.add(PackageResult(package: pkg.package));
+    }
+
+    pageCount = existingState.currentPage;
+    print('Restored ${allPackages.length} packages from previous pages');
+
+    // Resume from the next URL if available
+    if (existingState.nextPageUrl != null) {
+      try {
+        currentResults = await client.nextPage(existingState.nextPageUrl!);
+        allPackages.addAll(currentResults.packages);
+        pageCount++;
+        print(
+          'Page $pageCount: Found ${currentResults.packages.length} packages (total: ${allPackages.length})',
+        );
+
+        // Save progress after resuming
+        await _savePaginationProgress(
+          service,
+          searchId,
+          allPackages,
+          currentResults.next,
+          pageCount,
+          currentResults.next == null,
+        );
+      } catch (e) {
+        print('Error resuming from saved state: $e');
+        print('Starting fresh...');
+        allPackages.clear();
+        pageCount = 0;
+        currentResults = null;
+      }
+    }
+  }
+
+  // If no resume state or resume failed, start from the beginning
+  if (currentResults == null && pageCount == 0) {
+    print('Starting fresh package discovery...');
+
+    // Get first page
+    currentResults = await listPackages(client);
+    allPackages.addAll(currentResults.packages);
+    pageCount++;
+    print('Page $pageCount: Found ${currentResults.packages.length} packages');
+
+    // Save initial state
+    await _savePaginationProgress(
+      service,
+      searchId,
+      allPackages,
+      currentResults.next,
+      pageCount,
+      currentResults.next == null,
+    );
+  }
+
+  // Continue fetching remaining pages
+  while (currentResults?.next != null) {
+    try {
+      currentResults = await client.nextPage(currentResults!.next!);
+      allPackages.addAll(currentResults.packages);
+      pageCount++;
+
+      print(
+        'Page $pageCount: Found ${currentResults.packages.length} packages (total: ${allPackages.length})',
+      );
+
+      // Save progress after each page
+      await _savePaginationProgress(
+        service,
+        searchId,
+        allPackages,
+        currentResults.next,
+        pageCount,
+        currentResults.next == null,
+      );
+
+      // Small delay between page requests to be respectful to the API
+      await Future.delayed(const Duration(milliseconds: 200));
+    } catch (e) {
+      print('Error fetching page $pageCount: $e');
+      print('Progress has been saved. You can resume later.');
+      break;
+    }
+  }
+
+  final isCompleted = currentResults?.next == null;
+  if (isCompleted) {
+    print('✓ Package discovery completed!');
+    print(
+      'Completed pagination: $pageCount pages, ${allPackages.length} total packages',
+    );
+  } else {
+    print(
+      'Package discovery interrupted but progress saved. Run fetch again to continue.',
+    );
+  }
+
+  return allPackages;
+}
+
+/// Helper function to save pagination progress
+Future<void> _savePaginationProgress(
+  PackageDataService service,
+  String searchId,
+  List<PackageResult> allPackages,
+  String? nextUrl,
+  int currentPage,
+  bool isCompleted,
+) async {
+  final packagesJson =
+      allPackages
+          .map((pkg) => SerializablePackage(pkg.package).toJson())
+          .toList();
+
+  final existingState = await service.getSearchState(searchId);
+
+  if (existingState == null) {
+    // Create new state
+    await service.savePaginationProgress(
+      searchId: searchId,
+      allPackagesJson: jsonEncode(packagesJson),
+      nextPageUrl: nextUrl,
+      currentPage: currentPage,
+      discoveryCompleted: isCompleted,
+    );
+  } else {
+    // Update existing state
+    await service.updatePaginationState(
+      searchId: searchId,
+      allPackagesJson: jsonEncode(packagesJson),
+      nextPageUrl: nextUrl,
+      currentPage: currentPage,
+      discoveryCompleted: isCompleted,
+    );
+  }
+}
+
+Future<SearchResults> listPackages(PubClient client) async {
+  return await client.search(
+    '', // Empty search term to get all packages with the dependency tag
+    tags: [PackageTag.dependency('analyzer')],
+  );
+}
+
 /// Shows the current search status and progress
 Future<void> showSearchStatus() async {
   final service = PackageDataService.create();
@@ -396,14 +603,27 @@ Future<void> showSearchStatus() async {
     print('  Search ID: ${state.searchId}');
     print('  Started: ${state.searchStarted}');
     print('  Last Updated: ${state.lastUpdated}');
-    print('  Progress: ${state.currentIndex}/${state.totalCount} packages');
-    print('  Completed: ${state.isCompleted ? 'Yes' : 'No'}');
+    print('  Current Page: ${state.currentPage}');
+    print('  Discovery Completed: ${state.discoveryCompleted ? 'Yes' : 'No'}');
+    print(
+      '  Processing Progress: ${state.currentIndex}/${state.totalCount} packages',
+    );
+    print(
+      '  Processing Completed: ${state.processingCompleted ? 'Yes' : 'No'}',
+    );
 
-    final percentage = (state.currentIndex / state.totalCount * 100)
-        .toStringAsFixed(1);
-    print('  Percentage: $percentage%');
+    if (state.totalCount > 0) {
+      final percentage = (state.currentIndex / state.totalCount * 100)
+          .toStringAsFixed(1);
+      print('  Percentage: $percentage%');
+    }
 
-    if (!state.isCompleted) {
+    if (!state.discoveryCompleted) {
+      print('');
+      print(
+        'Currently discovering packages. Run "dart run bin/console.dart fetch" to continue.',
+      );
+    } else if (!state.processingCompleted) {
       final remaining = state.totalCount - state.currentIndex;
       print('  Remaining: $remaining packages');
       print('');

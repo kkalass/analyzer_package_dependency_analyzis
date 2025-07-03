@@ -104,6 +104,12 @@ class PackageDataService {
     int currentIndex, {
     bool? isCompleted,
   }) async {
+    await updatePaginationState(
+      searchId: searchId,
+      processingCompleted: isCompleted,
+    );
+
+    // Also update the current index in the database using the old method for compatibility
     await _database.updateSearchProgress(
       searchId,
       currentIndex,
@@ -114,6 +120,52 @@ class PackageDataService {
   /// Clears the search state (typically after completion)
   Future<void> clearSearchState(String searchId) async {
     await _database.clearSearchState(searchId);
+  }
+
+  /// Updates pagination state for resumable package discovery
+  Future<void> updatePaginationState({
+    required String searchId,
+    String? nextPageUrl,
+    int? currentPage,
+    bool? discoveryCompleted,
+    bool? processingCompleted,
+    String? allPackagesJson,
+  }) async {
+    await _database.updatePaginationState(
+      searchId: searchId,
+      nextPageUrl: nextPageUrl,
+      currentPage: currentPage,
+      discoveryCompleted: discoveryCompleted,
+      processingCompleted: processingCompleted,
+      allPackagesJson: allPackagesJson,
+    );
+  }
+
+  /// Saves pagination progress during package discovery
+  Future<void> savePaginationProgress({
+    required String searchId,
+    required String allPackagesJson,
+    String? nextPageUrl,
+    required int currentPage,
+    required bool discoveryCompleted,
+  }) async {
+    await _database.savePaginationProgress(
+      searchId: searchId,
+      allPackagesJson: allPackagesJson,
+      nextPageUrl: nextPageUrl,
+      currentPage: currentPage,
+      discoveryCompleted: discoveryCompleted,
+    );
+  }
+
+  /// Clears all search states
+  Future<void> clearAllSearchStates() async {
+    await _database.clearAllSearchStates();
+  }
+
+  /// Clears all package data
+  Future<void> clearAllPackageData() async {
+    await _database.clearAllPackageData();
   }
 
   /// Closes the database connection

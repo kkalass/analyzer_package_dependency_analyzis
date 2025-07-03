@@ -658,6 +658,29 @@ class $PackageSearchStateTableTable extends PackageSearchStateTable
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _nextPageUrlMeta = const VerificationMeta(
+    'nextPageUrl',
+  );
+  @override
+  late final GeneratedColumn<String> nextPageUrl = GeneratedColumn<String>(
+    'next_page_url',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _currentPageMeta = const VerificationMeta(
+    'currentPage',
+  );
+  @override
+  late final GeneratedColumn<int> currentPage = GeneratedColumn<int>(
+    'current_page',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   static const VerificationMeta _currentIndexMeta = const VerificationMeta(
     'currentIndex',
   );
@@ -680,6 +703,34 @@ class $PackageSearchStateTableTable extends PackageSearchStateTable
     false,
     type: DriftSqlType.int,
     requiredDuringInsert: true,
+  );
+  static const VerificationMeta _discoveryCompletedMeta =
+      const VerificationMeta('discoveryCompleted');
+  @override
+  late final GeneratedColumn<bool> discoveryCompleted = GeneratedColumn<bool>(
+    'discovery_completed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("discovery_completed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _processingCompletedMeta =
+      const VerificationMeta('processingCompleted');
+  @override
+  late final GeneratedColumn<bool> processingCompleted = GeneratedColumn<bool>(
+    'processing_completed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("processing_completed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
   );
   static const VerificationMeta _searchStartedMeta = const VerificationMeta(
     'searchStarted',
@@ -705,30 +756,18 @@ class $PackageSearchStateTableTable extends PackageSearchStateTable
     requiredDuringInsert: false,
     defaultValue: currentDateAndTime,
   );
-  static const VerificationMeta _isCompletedMeta = const VerificationMeta(
-    'isCompleted',
-  );
-  @override
-  late final GeneratedColumn<bool> isCompleted = GeneratedColumn<bool>(
-    'is_completed',
-    aliasedName,
-    false,
-    type: DriftSqlType.bool,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'CHECK ("is_completed" IN (0, 1))',
-    ),
-    defaultValue: const Constant(false),
-  );
   @override
   List<GeneratedColumn> get $columns => [
     searchId,
     allPackagesJson,
+    nextPageUrl,
+    currentPage,
     currentIndex,
     totalCount,
+    discoveryCompleted,
+    processingCompleted,
     searchStarted,
     lastUpdated,
-    isCompleted,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -761,6 +800,24 @@ class $PackageSearchStateTableTable extends PackageSearchStateTable
     } else if (isInserting) {
       context.missing(_allPackagesJsonMeta);
     }
+    if (data.containsKey('next_page_url')) {
+      context.handle(
+        _nextPageUrlMeta,
+        nextPageUrl.isAcceptableOrUnknown(
+          data['next_page_url']!,
+          _nextPageUrlMeta,
+        ),
+      );
+    }
+    if (data.containsKey('current_page')) {
+      context.handle(
+        _currentPageMeta,
+        currentPage.isAcceptableOrUnknown(
+          data['current_page']!,
+          _currentPageMeta,
+        ),
+      );
+    }
     if (data.containsKey('current_index')) {
       context.handle(
         _currentIndexMeta,
@@ -777,6 +834,24 @@ class $PackageSearchStateTableTable extends PackageSearchStateTable
       );
     } else if (isInserting) {
       context.missing(_totalCountMeta);
+    }
+    if (data.containsKey('discovery_completed')) {
+      context.handle(
+        _discoveryCompletedMeta,
+        discoveryCompleted.isAcceptableOrUnknown(
+          data['discovery_completed']!,
+          _discoveryCompletedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('processing_completed')) {
+      context.handle(
+        _processingCompletedMeta,
+        processingCompleted.isAcceptableOrUnknown(
+          data['processing_completed']!,
+          _processingCompletedMeta,
+        ),
+      );
     }
     if (data.containsKey('search_started')) {
       context.handle(
@@ -795,15 +870,6 @@ class $PackageSearchStateTableTable extends PackageSearchStateTable
         lastUpdated.isAcceptableOrUnknown(
           data['last_updated']!,
           _lastUpdatedMeta,
-        ),
-      );
-    }
-    if (data.containsKey('is_completed')) {
-      context.handle(
-        _isCompletedMeta,
-        isCompleted.isAcceptableOrUnknown(
-          data['is_completed']!,
-          _isCompletedMeta,
         ),
       );
     }
@@ -829,6 +895,15 @@ class $PackageSearchStateTableTable extends PackageSearchStateTable
             DriftSqlType.string,
             data['${effectivePrefix}all_packages_json'],
           )!,
+      nextPageUrl: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}next_page_url'],
+      ),
+      currentPage:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}current_page'],
+          )!,
       currentIndex:
           attachedDatabase.typeMapping.read(
             DriftSqlType.int,
@@ -839,6 +914,16 @@ class $PackageSearchStateTableTable extends PackageSearchStateTable
             DriftSqlType.int,
             data['${effectivePrefix}total_count'],
           )!,
+      discoveryCompleted:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}discovery_completed'],
+          )!,
+      processingCompleted:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}processing_completed'],
+          )!,
       searchStarted:
           attachedDatabase.typeMapping.read(
             DriftSqlType.dateTime,
@@ -848,11 +933,6 @@ class $PackageSearchStateTableTable extends PackageSearchStateTable
           attachedDatabase.typeMapping.read(
             DriftSqlType.dateTime,
             data['${effectivePrefix}last_updated'],
-          )!,
-      isCompleted:
-          attachedDatabase.typeMapping.read(
-            DriftSqlType.bool,
-            data['${effectivePrefix}is_completed'],
           )!,
     );
   }
@@ -868,42 +948,59 @@ class PackageSearchStateTableData extends DataClass
   /// Primary key - search identifier (always 'analyzer_dependency')
   final String searchId;
 
-  /// JSON encoded list of all discovered packages
+  /// JSON encoded list of all discovered packages so far
   final String allPackagesJson;
 
-  /// Current processing index
+  /// Current pagination URL (next page to fetch)
+  final String? nextPageUrl;
+
+  /// Current page number being fetched
+  final int currentPage;
+
+  /// Current processing index for package processing
   final int currentIndex;
 
-  /// Total count of packages
+  /// Total count of packages discovered so far
   final int totalCount;
+
+  /// Whether package discovery is completed
+  final bool discoveryCompleted;
+
+  /// Whether processing is completed
+  final bool processingCompleted;
 
   /// Timestamp when search was started
   final DateTime searchStarted;
 
   /// Timestamp when last updated
   final DateTime lastUpdated;
-
-  /// Whether the search is completed
-  final bool isCompleted;
   const PackageSearchStateTableData({
     required this.searchId,
     required this.allPackagesJson,
+    this.nextPageUrl,
+    required this.currentPage,
     required this.currentIndex,
     required this.totalCount,
+    required this.discoveryCompleted,
+    required this.processingCompleted,
     required this.searchStarted,
     required this.lastUpdated,
-    required this.isCompleted,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['search_id'] = Variable<String>(searchId);
     map['all_packages_json'] = Variable<String>(allPackagesJson);
+    if (!nullToAbsent || nextPageUrl != null) {
+      map['next_page_url'] = Variable<String>(nextPageUrl);
+    }
+    map['current_page'] = Variable<int>(currentPage);
     map['current_index'] = Variable<int>(currentIndex);
     map['total_count'] = Variable<int>(totalCount);
+    map['discovery_completed'] = Variable<bool>(discoveryCompleted);
+    map['processing_completed'] = Variable<bool>(processingCompleted);
     map['search_started'] = Variable<DateTime>(searchStarted);
     map['last_updated'] = Variable<DateTime>(lastUpdated);
-    map['is_completed'] = Variable<bool>(isCompleted);
     return map;
   }
 
@@ -911,11 +1008,17 @@ class PackageSearchStateTableData extends DataClass
     return PackageSearchStateTableCompanion(
       searchId: Value(searchId),
       allPackagesJson: Value(allPackagesJson),
+      nextPageUrl:
+          nextPageUrl == null && nullToAbsent
+              ? const Value.absent()
+              : Value(nextPageUrl),
+      currentPage: Value(currentPage),
       currentIndex: Value(currentIndex),
       totalCount: Value(totalCount),
+      discoveryCompleted: Value(discoveryCompleted),
+      processingCompleted: Value(processingCompleted),
       searchStarted: Value(searchStarted),
       lastUpdated: Value(lastUpdated),
-      isCompleted: Value(isCompleted),
     );
   }
 
@@ -927,11 +1030,16 @@ class PackageSearchStateTableData extends DataClass
     return PackageSearchStateTableData(
       searchId: serializer.fromJson<String>(json['searchId']),
       allPackagesJson: serializer.fromJson<String>(json['allPackagesJson']),
+      nextPageUrl: serializer.fromJson<String?>(json['nextPageUrl']),
+      currentPage: serializer.fromJson<int>(json['currentPage']),
       currentIndex: serializer.fromJson<int>(json['currentIndex']),
       totalCount: serializer.fromJson<int>(json['totalCount']),
+      discoveryCompleted: serializer.fromJson<bool>(json['discoveryCompleted']),
+      processingCompleted: serializer.fromJson<bool>(
+        json['processingCompleted'],
+      ),
       searchStarted: serializer.fromJson<DateTime>(json['searchStarted']),
       lastUpdated: serializer.fromJson<DateTime>(json['lastUpdated']),
-      isCompleted: serializer.fromJson<bool>(json['isCompleted']),
     );
   }
   @override
@@ -940,30 +1048,39 @@ class PackageSearchStateTableData extends DataClass
     return <String, dynamic>{
       'searchId': serializer.toJson<String>(searchId),
       'allPackagesJson': serializer.toJson<String>(allPackagesJson),
+      'nextPageUrl': serializer.toJson<String?>(nextPageUrl),
+      'currentPage': serializer.toJson<int>(currentPage),
       'currentIndex': serializer.toJson<int>(currentIndex),
       'totalCount': serializer.toJson<int>(totalCount),
+      'discoveryCompleted': serializer.toJson<bool>(discoveryCompleted),
+      'processingCompleted': serializer.toJson<bool>(processingCompleted),
       'searchStarted': serializer.toJson<DateTime>(searchStarted),
       'lastUpdated': serializer.toJson<DateTime>(lastUpdated),
-      'isCompleted': serializer.toJson<bool>(isCompleted),
     };
   }
 
   PackageSearchStateTableData copyWith({
     String? searchId,
     String? allPackagesJson,
+    Value<String?> nextPageUrl = const Value.absent(),
+    int? currentPage,
     int? currentIndex,
     int? totalCount,
+    bool? discoveryCompleted,
+    bool? processingCompleted,
     DateTime? searchStarted,
     DateTime? lastUpdated,
-    bool? isCompleted,
   }) => PackageSearchStateTableData(
     searchId: searchId ?? this.searchId,
     allPackagesJson: allPackagesJson ?? this.allPackagesJson,
+    nextPageUrl: nextPageUrl.present ? nextPageUrl.value : this.nextPageUrl,
+    currentPage: currentPage ?? this.currentPage,
     currentIndex: currentIndex ?? this.currentIndex,
     totalCount: totalCount ?? this.totalCount,
+    discoveryCompleted: discoveryCompleted ?? this.discoveryCompleted,
+    processingCompleted: processingCompleted ?? this.processingCompleted,
     searchStarted: searchStarted ?? this.searchStarted,
     lastUpdated: lastUpdated ?? this.lastUpdated,
-    isCompleted: isCompleted ?? this.isCompleted,
   );
   PackageSearchStateTableData copyWithCompanion(
     PackageSearchStateTableCompanion data,
@@ -974,20 +1091,30 @@ class PackageSearchStateTableData extends DataClass
           data.allPackagesJson.present
               ? data.allPackagesJson.value
               : this.allPackagesJson,
+      nextPageUrl:
+          data.nextPageUrl.present ? data.nextPageUrl.value : this.nextPageUrl,
+      currentPage:
+          data.currentPage.present ? data.currentPage.value : this.currentPage,
       currentIndex:
           data.currentIndex.present
               ? data.currentIndex.value
               : this.currentIndex,
       totalCount:
           data.totalCount.present ? data.totalCount.value : this.totalCount,
+      discoveryCompleted:
+          data.discoveryCompleted.present
+              ? data.discoveryCompleted.value
+              : this.discoveryCompleted,
+      processingCompleted:
+          data.processingCompleted.present
+              ? data.processingCompleted.value
+              : this.processingCompleted,
       searchStarted:
           data.searchStarted.present
               ? data.searchStarted.value
               : this.searchStarted,
       lastUpdated:
           data.lastUpdated.present ? data.lastUpdated.value : this.lastUpdated,
-      isCompleted:
-          data.isCompleted.present ? data.isCompleted.value : this.isCompleted,
     );
   }
 
@@ -996,11 +1123,14 @@ class PackageSearchStateTableData extends DataClass
     return (StringBuffer('PackageSearchStateTableData(')
           ..write('searchId: $searchId, ')
           ..write('allPackagesJson: $allPackagesJson, ')
+          ..write('nextPageUrl: $nextPageUrl, ')
+          ..write('currentPage: $currentPage, ')
           ..write('currentIndex: $currentIndex, ')
           ..write('totalCount: $totalCount, ')
+          ..write('discoveryCompleted: $discoveryCompleted, ')
+          ..write('processingCompleted: $processingCompleted, ')
           ..write('searchStarted: $searchStarted, ')
-          ..write('lastUpdated: $lastUpdated, ')
-          ..write('isCompleted: $isCompleted')
+          ..write('lastUpdated: $lastUpdated')
           ..write(')'))
         .toString();
   }
@@ -1009,11 +1139,14 @@ class PackageSearchStateTableData extends DataClass
   int get hashCode => Object.hash(
     searchId,
     allPackagesJson,
+    nextPageUrl,
+    currentPage,
     currentIndex,
     totalCount,
+    discoveryCompleted,
+    processingCompleted,
     searchStarted,
     lastUpdated,
-    isCompleted,
   );
   @override
   bool operator ==(Object other) =>
@@ -1021,41 +1154,53 @@ class PackageSearchStateTableData extends DataClass
       (other is PackageSearchStateTableData &&
           other.searchId == this.searchId &&
           other.allPackagesJson == this.allPackagesJson &&
+          other.nextPageUrl == this.nextPageUrl &&
+          other.currentPage == this.currentPage &&
           other.currentIndex == this.currentIndex &&
           other.totalCount == this.totalCount &&
+          other.discoveryCompleted == this.discoveryCompleted &&
+          other.processingCompleted == this.processingCompleted &&
           other.searchStarted == this.searchStarted &&
-          other.lastUpdated == this.lastUpdated &&
-          other.isCompleted == this.isCompleted);
+          other.lastUpdated == this.lastUpdated);
 }
 
 class PackageSearchStateTableCompanion
     extends UpdateCompanion<PackageSearchStateTableData> {
   final Value<String> searchId;
   final Value<String> allPackagesJson;
+  final Value<String?> nextPageUrl;
+  final Value<int> currentPage;
   final Value<int> currentIndex;
   final Value<int> totalCount;
+  final Value<bool> discoveryCompleted;
+  final Value<bool> processingCompleted;
   final Value<DateTime> searchStarted;
   final Value<DateTime> lastUpdated;
-  final Value<bool> isCompleted;
   final Value<int> rowid;
   const PackageSearchStateTableCompanion({
     this.searchId = const Value.absent(),
     this.allPackagesJson = const Value.absent(),
+    this.nextPageUrl = const Value.absent(),
+    this.currentPage = const Value.absent(),
     this.currentIndex = const Value.absent(),
     this.totalCount = const Value.absent(),
+    this.discoveryCompleted = const Value.absent(),
+    this.processingCompleted = const Value.absent(),
     this.searchStarted = const Value.absent(),
     this.lastUpdated = const Value.absent(),
-    this.isCompleted = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   PackageSearchStateTableCompanion.insert({
     required String searchId,
     required String allPackagesJson,
+    this.nextPageUrl = const Value.absent(),
+    this.currentPage = const Value.absent(),
     this.currentIndex = const Value.absent(),
     required int totalCount,
+    this.discoveryCompleted = const Value.absent(),
+    this.processingCompleted = const Value.absent(),
     required DateTime searchStarted,
     this.lastUpdated = const Value.absent(),
-    this.isCompleted = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : searchId = Value(searchId),
        allPackagesJson = Value(allPackagesJson),
@@ -1064,21 +1209,28 @@ class PackageSearchStateTableCompanion
   static Insertable<PackageSearchStateTableData> custom({
     Expression<String>? searchId,
     Expression<String>? allPackagesJson,
+    Expression<String>? nextPageUrl,
+    Expression<int>? currentPage,
     Expression<int>? currentIndex,
     Expression<int>? totalCount,
+    Expression<bool>? discoveryCompleted,
+    Expression<bool>? processingCompleted,
     Expression<DateTime>? searchStarted,
     Expression<DateTime>? lastUpdated,
-    Expression<bool>? isCompleted,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (searchId != null) 'search_id': searchId,
       if (allPackagesJson != null) 'all_packages_json': allPackagesJson,
+      if (nextPageUrl != null) 'next_page_url': nextPageUrl,
+      if (currentPage != null) 'current_page': currentPage,
       if (currentIndex != null) 'current_index': currentIndex,
       if (totalCount != null) 'total_count': totalCount,
+      if (discoveryCompleted != null) 'discovery_completed': discoveryCompleted,
+      if (processingCompleted != null)
+        'processing_completed': processingCompleted,
       if (searchStarted != null) 'search_started': searchStarted,
       if (lastUpdated != null) 'last_updated': lastUpdated,
-      if (isCompleted != null) 'is_completed': isCompleted,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1086,21 +1238,27 @@ class PackageSearchStateTableCompanion
   PackageSearchStateTableCompanion copyWith({
     Value<String>? searchId,
     Value<String>? allPackagesJson,
+    Value<String?>? nextPageUrl,
+    Value<int>? currentPage,
     Value<int>? currentIndex,
     Value<int>? totalCount,
+    Value<bool>? discoveryCompleted,
+    Value<bool>? processingCompleted,
     Value<DateTime>? searchStarted,
     Value<DateTime>? lastUpdated,
-    Value<bool>? isCompleted,
     Value<int>? rowid,
   }) {
     return PackageSearchStateTableCompanion(
       searchId: searchId ?? this.searchId,
       allPackagesJson: allPackagesJson ?? this.allPackagesJson,
+      nextPageUrl: nextPageUrl ?? this.nextPageUrl,
+      currentPage: currentPage ?? this.currentPage,
       currentIndex: currentIndex ?? this.currentIndex,
       totalCount: totalCount ?? this.totalCount,
+      discoveryCompleted: discoveryCompleted ?? this.discoveryCompleted,
+      processingCompleted: processingCompleted ?? this.processingCompleted,
       searchStarted: searchStarted ?? this.searchStarted,
       lastUpdated: lastUpdated ?? this.lastUpdated,
-      isCompleted: isCompleted ?? this.isCompleted,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1114,20 +1272,29 @@ class PackageSearchStateTableCompanion
     if (allPackagesJson.present) {
       map['all_packages_json'] = Variable<String>(allPackagesJson.value);
     }
+    if (nextPageUrl.present) {
+      map['next_page_url'] = Variable<String>(nextPageUrl.value);
+    }
+    if (currentPage.present) {
+      map['current_page'] = Variable<int>(currentPage.value);
+    }
     if (currentIndex.present) {
       map['current_index'] = Variable<int>(currentIndex.value);
     }
     if (totalCount.present) {
       map['total_count'] = Variable<int>(totalCount.value);
     }
+    if (discoveryCompleted.present) {
+      map['discovery_completed'] = Variable<bool>(discoveryCompleted.value);
+    }
+    if (processingCompleted.present) {
+      map['processing_completed'] = Variable<bool>(processingCompleted.value);
+    }
     if (searchStarted.present) {
       map['search_started'] = Variable<DateTime>(searchStarted.value);
     }
     if (lastUpdated.present) {
       map['last_updated'] = Variable<DateTime>(lastUpdated.value);
-    }
-    if (isCompleted.present) {
-      map['is_completed'] = Variable<bool>(isCompleted.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -1140,11 +1307,14 @@ class PackageSearchStateTableCompanion
     return (StringBuffer('PackageSearchStateTableCompanion(')
           ..write('searchId: $searchId, ')
           ..write('allPackagesJson: $allPackagesJson, ')
+          ..write('nextPageUrl: $nextPageUrl, ')
+          ..write('currentPage: $currentPage, ')
           ..write('currentIndex: $currentIndex, ')
           ..write('totalCount: $totalCount, ')
+          ..write('discoveryCompleted: $discoveryCompleted, ')
+          ..write('processingCompleted: $processingCompleted, ')
           ..write('searchStarted: $searchStarted, ')
           ..write('lastUpdated: $lastUpdated, ')
-          ..write('isCompleted: $isCompleted, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1483,22 +1653,28 @@ typedef $$PackageSearchStateTableTableCreateCompanionBuilder =
     PackageSearchStateTableCompanion Function({
       required String searchId,
       required String allPackagesJson,
+      Value<String?> nextPageUrl,
+      Value<int> currentPage,
       Value<int> currentIndex,
       required int totalCount,
+      Value<bool> discoveryCompleted,
+      Value<bool> processingCompleted,
       required DateTime searchStarted,
       Value<DateTime> lastUpdated,
-      Value<bool> isCompleted,
       Value<int> rowid,
     });
 typedef $$PackageSearchStateTableTableUpdateCompanionBuilder =
     PackageSearchStateTableCompanion Function({
       Value<String> searchId,
       Value<String> allPackagesJson,
+      Value<String?> nextPageUrl,
+      Value<int> currentPage,
       Value<int> currentIndex,
       Value<int> totalCount,
+      Value<bool> discoveryCompleted,
+      Value<bool> processingCompleted,
       Value<DateTime> searchStarted,
       Value<DateTime> lastUpdated,
-      Value<bool> isCompleted,
       Value<int> rowid,
     });
 
@@ -1521,6 +1697,16 @@ class $$PackageSearchStateTableTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get nextPageUrl => $composableBuilder(
+    column: $table.nextPageUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get currentPage => $composableBuilder(
+    column: $table.currentPage,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<int> get currentIndex => $composableBuilder(
     column: $table.currentIndex,
     builder: (column) => ColumnFilters(column),
@@ -1531,6 +1717,16 @@ class $$PackageSearchStateTableTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<bool> get discoveryCompleted => $composableBuilder(
+    column: $table.discoveryCompleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get processingCompleted => $composableBuilder(
+    column: $table.processingCompleted,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<DateTime> get searchStarted => $composableBuilder(
     column: $table.searchStarted,
     builder: (column) => ColumnFilters(column),
@@ -1538,11 +1734,6 @@ class $$PackageSearchStateTableTableFilterComposer
 
   ColumnFilters<DateTime> get lastUpdated => $composableBuilder(
     column: $table.lastUpdated,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<bool> get isCompleted => $composableBuilder(
-    column: $table.isCompleted,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -1566,6 +1757,16 @@ class $$PackageSearchStateTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get nextPageUrl => $composableBuilder(
+    column: $table.nextPageUrl,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get currentPage => $composableBuilder(
+    column: $table.currentPage,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get currentIndex => $composableBuilder(
     column: $table.currentIndex,
     builder: (column) => ColumnOrderings(column),
@@ -1576,6 +1777,16 @@ class $$PackageSearchStateTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get discoveryCompleted => $composableBuilder(
+    column: $table.discoveryCompleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get processingCompleted => $composableBuilder(
+    column: $table.processingCompleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get searchStarted => $composableBuilder(
     column: $table.searchStarted,
     builder: (column) => ColumnOrderings(column),
@@ -1583,11 +1794,6 @@ class $$PackageSearchStateTableTableOrderingComposer
 
   ColumnOrderings<DateTime> get lastUpdated => $composableBuilder(
     column: $table.lastUpdated,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<bool> get isCompleted => $composableBuilder(
-    column: $table.isCompleted,
     builder: (column) => ColumnOrderings(column),
   );
 }
@@ -1609,6 +1815,16 @@ class $$PackageSearchStateTableTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get nextPageUrl => $composableBuilder(
+    column: $table.nextPageUrl,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get currentPage => $composableBuilder(
+    column: $table.currentPage,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<int> get currentIndex => $composableBuilder(
     column: $table.currentIndex,
     builder: (column) => column,
@@ -1619,6 +1835,16 @@ class $$PackageSearchStateTableTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<bool> get discoveryCompleted => $composableBuilder(
+    column: $table.discoveryCompleted,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get processingCompleted => $composableBuilder(
+    column: $table.processingCompleted,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<DateTime> get searchStarted => $composableBuilder(
     column: $table.searchStarted,
     builder: (column) => column,
@@ -1626,11 +1852,6 @@ class $$PackageSearchStateTableTableAnnotationComposer
 
   GeneratedColumn<DateTime> get lastUpdated => $composableBuilder(
     column: $table.lastUpdated,
-    builder: (column) => column,
-  );
-
-  GeneratedColumn<bool> get isCompleted => $composableBuilder(
-    column: $table.isCompleted,
     builder: (column) => column,
   );
 }
@@ -1683,40 +1904,52 @@ class $$PackageSearchStateTableTableTableManager
               ({
                 Value<String> searchId = const Value.absent(),
                 Value<String> allPackagesJson = const Value.absent(),
+                Value<String?> nextPageUrl = const Value.absent(),
+                Value<int> currentPage = const Value.absent(),
                 Value<int> currentIndex = const Value.absent(),
                 Value<int> totalCount = const Value.absent(),
+                Value<bool> discoveryCompleted = const Value.absent(),
+                Value<bool> processingCompleted = const Value.absent(),
                 Value<DateTime> searchStarted = const Value.absent(),
                 Value<DateTime> lastUpdated = const Value.absent(),
-                Value<bool> isCompleted = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PackageSearchStateTableCompanion(
                 searchId: searchId,
                 allPackagesJson: allPackagesJson,
+                nextPageUrl: nextPageUrl,
+                currentPage: currentPage,
                 currentIndex: currentIndex,
                 totalCount: totalCount,
+                discoveryCompleted: discoveryCompleted,
+                processingCompleted: processingCompleted,
                 searchStarted: searchStarted,
                 lastUpdated: lastUpdated,
-                isCompleted: isCompleted,
                 rowid: rowid,
               ),
           createCompanionCallback:
               ({
                 required String searchId,
                 required String allPackagesJson,
+                Value<String?> nextPageUrl = const Value.absent(),
+                Value<int> currentPage = const Value.absent(),
                 Value<int> currentIndex = const Value.absent(),
                 required int totalCount,
+                Value<bool> discoveryCompleted = const Value.absent(),
+                Value<bool> processingCompleted = const Value.absent(),
                 required DateTime searchStarted,
                 Value<DateTime> lastUpdated = const Value.absent(),
-                Value<bool> isCompleted = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PackageSearchStateTableCompanion.insert(
                 searchId: searchId,
                 allPackagesJson: allPackagesJson,
+                nextPageUrl: nextPageUrl,
+                currentPage: currentPage,
                 currentIndex: currentIndex,
                 totalCount: totalCount,
+                discoveryCompleted: discoveryCompleted,
+                processingCompleted: processingCompleted,
                 searchStarted: searchStarted,
                 lastUpdated: lastUpdated,
-                isCompleted: isCompleted,
                 rowid: rowid,
               ),
           withReferenceMapper:
