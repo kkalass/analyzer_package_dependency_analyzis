@@ -1,7 +1,23 @@
+import 'dart:convert';
+
 import 'package:console/database.dart';
 import 'package:console/package_data_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:yaml/yaml.dart';
+
+/// Simple model for serializing package names for persistence
+class SerializablePackage {
+  final String package;
+
+  SerializablePackage(this.package);
+
+  /// Convert to JSON-serializable map
+  Map<String, dynamic> toJson() => {'package': package};
+
+  /// Create from JSON map
+  factory SerializablePackage.fromJson(Map<String, dynamic> json) =>
+      SerializablePackage(json['package'] as String);
+}
 
 class PackageData {
   final String packageName;

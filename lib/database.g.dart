@@ -630,17 +630,543 @@ class PackageDataTableCompanion extends UpdateCompanion<PackageDataTableData> {
   }
 }
 
+class $PackageSearchStateTableTable extends PackageSearchStateTable
+    with TableInfo<$PackageSearchStateTableTable, PackageSearchStateTableData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PackageSearchStateTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _searchIdMeta = const VerificationMeta(
+    'searchId',
+  );
+  @override
+  late final GeneratedColumn<String> searchId = GeneratedColumn<String>(
+    'search_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _allPackagesJsonMeta = const VerificationMeta(
+    'allPackagesJson',
+  );
+  @override
+  late final GeneratedColumn<String> allPackagesJson = GeneratedColumn<String>(
+    'all_packages_json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _currentIndexMeta = const VerificationMeta(
+    'currentIndex',
+  );
+  @override
+  late final GeneratedColumn<int> currentIndex = GeneratedColumn<int>(
+    'current_index',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _totalCountMeta = const VerificationMeta(
+    'totalCount',
+  );
+  @override
+  late final GeneratedColumn<int> totalCount = GeneratedColumn<int>(
+    'total_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _searchStartedMeta = const VerificationMeta(
+    'searchStarted',
+  );
+  @override
+  late final GeneratedColumn<DateTime> searchStarted =
+      GeneratedColumn<DateTime>(
+        'search_started',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _lastUpdatedMeta = const VerificationMeta(
+    'lastUpdated',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastUpdated = GeneratedColumn<DateTime>(
+    'last_updated',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _isCompletedMeta = const VerificationMeta(
+    'isCompleted',
+  );
+  @override
+  late final GeneratedColumn<bool> isCompleted = GeneratedColumn<bool>(
+    'is_completed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_completed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    searchId,
+    allPackagesJson,
+    currentIndex,
+    totalCount,
+    searchStarted,
+    lastUpdated,
+    isCompleted,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'package_search_state';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PackageSearchStateTableData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('search_id')) {
+      context.handle(
+        _searchIdMeta,
+        searchId.isAcceptableOrUnknown(data['search_id']!, _searchIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_searchIdMeta);
+    }
+    if (data.containsKey('all_packages_json')) {
+      context.handle(
+        _allPackagesJsonMeta,
+        allPackagesJson.isAcceptableOrUnknown(
+          data['all_packages_json']!,
+          _allPackagesJsonMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_allPackagesJsonMeta);
+    }
+    if (data.containsKey('current_index')) {
+      context.handle(
+        _currentIndexMeta,
+        currentIndex.isAcceptableOrUnknown(
+          data['current_index']!,
+          _currentIndexMeta,
+        ),
+      );
+    }
+    if (data.containsKey('total_count')) {
+      context.handle(
+        _totalCountMeta,
+        totalCount.isAcceptableOrUnknown(data['total_count']!, _totalCountMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_totalCountMeta);
+    }
+    if (data.containsKey('search_started')) {
+      context.handle(
+        _searchStartedMeta,
+        searchStarted.isAcceptableOrUnknown(
+          data['search_started']!,
+          _searchStartedMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_searchStartedMeta);
+    }
+    if (data.containsKey('last_updated')) {
+      context.handle(
+        _lastUpdatedMeta,
+        lastUpdated.isAcceptableOrUnknown(
+          data['last_updated']!,
+          _lastUpdatedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('is_completed')) {
+      context.handle(
+        _isCompletedMeta,
+        isCompleted.isAcceptableOrUnknown(
+          data['is_completed']!,
+          _isCompletedMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {searchId};
+  @override
+  PackageSearchStateTableData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PackageSearchStateTableData(
+      searchId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}search_id'],
+          )!,
+      allPackagesJson:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}all_packages_json'],
+          )!,
+      currentIndex:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}current_index'],
+          )!,
+      totalCount:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}total_count'],
+          )!,
+      searchStarted:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}search_started'],
+          )!,
+      lastUpdated:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}last_updated'],
+          )!,
+      isCompleted:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}is_completed'],
+          )!,
+    );
+  }
+
+  @override
+  $PackageSearchStateTableTable createAlias(String alias) {
+    return $PackageSearchStateTableTable(attachedDatabase, alias);
+  }
+}
+
+class PackageSearchStateTableData extends DataClass
+    implements Insertable<PackageSearchStateTableData> {
+  /// Primary key - search identifier (always 'analyzer_dependency')
+  final String searchId;
+
+  /// JSON encoded list of all discovered packages
+  final String allPackagesJson;
+
+  /// Current processing index
+  final int currentIndex;
+
+  /// Total count of packages
+  final int totalCount;
+
+  /// Timestamp when search was started
+  final DateTime searchStarted;
+
+  /// Timestamp when last updated
+  final DateTime lastUpdated;
+
+  /// Whether the search is completed
+  final bool isCompleted;
+  const PackageSearchStateTableData({
+    required this.searchId,
+    required this.allPackagesJson,
+    required this.currentIndex,
+    required this.totalCount,
+    required this.searchStarted,
+    required this.lastUpdated,
+    required this.isCompleted,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['search_id'] = Variable<String>(searchId);
+    map['all_packages_json'] = Variable<String>(allPackagesJson);
+    map['current_index'] = Variable<int>(currentIndex);
+    map['total_count'] = Variable<int>(totalCount);
+    map['search_started'] = Variable<DateTime>(searchStarted);
+    map['last_updated'] = Variable<DateTime>(lastUpdated);
+    map['is_completed'] = Variable<bool>(isCompleted);
+    return map;
+  }
+
+  PackageSearchStateTableCompanion toCompanion(bool nullToAbsent) {
+    return PackageSearchStateTableCompanion(
+      searchId: Value(searchId),
+      allPackagesJson: Value(allPackagesJson),
+      currentIndex: Value(currentIndex),
+      totalCount: Value(totalCount),
+      searchStarted: Value(searchStarted),
+      lastUpdated: Value(lastUpdated),
+      isCompleted: Value(isCompleted),
+    );
+  }
+
+  factory PackageSearchStateTableData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PackageSearchStateTableData(
+      searchId: serializer.fromJson<String>(json['searchId']),
+      allPackagesJson: serializer.fromJson<String>(json['allPackagesJson']),
+      currentIndex: serializer.fromJson<int>(json['currentIndex']),
+      totalCount: serializer.fromJson<int>(json['totalCount']),
+      searchStarted: serializer.fromJson<DateTime>(json['searchStarted']),
+      lastUpdated: serializer.fromJson<DateTime>(json['lastUpdated']),
+      isCompleted: serializer.fromJson<bool>(json['isCompleted']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'searchId': serializer.toJson<String>(searchId),
+      'allPackagesJson': serializer.toJson<String>(allPackagesJson),
+      'currentIndex': serializer.toJson<int>(currentIndex),
+      'totalCount': serializer.toJson<int>(totalCount),
+      'searchStarted': serializer.toJson<DateTime>(searchStarted),
+      'lastUpdated': serializer.toJson<DateTime>(lastUpdated),
+      'isCompleted': serializer.toJson<bool>(isCompleted),
+    };
+  }
+
+  PackageSearchStateTableData copyWith({
+    String? searchId,
+    String? allPackagesJson,
+    int? currentIndex,
+    int? totalCount,
+    DateTime? searchStarted,
+    DateTime? lastUpdated,
+    bool? isCompleted,
+  }) => PackageSearchStateTableData(
+    searchId: searchId ?? this.searchId,
+    allPackagesJson: allPackagesJson ?? this.allPackagesJson,
+    currentIndex: currentIndex ?? this.currentIndex,
+    totalCount: totalCount ?? this.totalCount,
+    searchStarted: searchStarted ?? this.searchStarted,
+    lastUpdated: lastUpdated ?? this.lastUpdated,
+    isCompleted: isCompleted ?? this.isCompleted,
+  );
+  PackageSearchStateTableData copyWithCompanion(
+    PackageSearchStateTableCompanion data,
+  ) {
+    return PackageSearchStateTableData(
+      searchId: data.searchId.present ? data.searchId.value : this.searchId,
+      allPackagesJson:
+          data.allPackagesJson.present
+              ? data.allPackagesJson.value
+              : this.allPackagesJson,
+      currentIndex:
+          data.currentIndex.present
+              ? data.currentIndex.value
+              : this.currentIndex,
+      totalCount:
+          data.totalCount.present ? data.totalCount.value : this.totalCount,
+      searchStarted:
+          data.searchStarted.present
+              ? data.searchStarted.value
+              : this.searchStarted,
+      lastUpdated:
+          data.lastUpdated.present ? data.lastUpdated.value : this.lastUpdated,
+      isCompleted:
+          data.isCompleted.present ? data.isCompleted.value : this.isCompleted,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PackageSearchStateTableData(')
+          ..write('searchId: $searchId, ')
+          ..write('allPackagesJson: $allPackagesJson, ')
+          ..write('currentIndex: $currentIndex, ')
+          ..write('totalCount: $totalCount, ')
+          ..write('searchStarted: $searchStarted, ')
+          ..write('lastUpdated: $lastUpdated, ')
+          ..write('isCompleted: $isCompleted')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    searchId,
+    allPackagesJson,
+    currentIndex,
+    totalCount,
+    searchStarted,
+    lastUpdated,
+    isCompleted,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PackageSearchStateTableData &&
+          other.searchId == this.searchId &&
+          other.allPackagesJson == this.allPackagesJson &&
+          other.currentIndex == this.currentIndex &&
+          other.totalCount == this.totalCount &&
+          other.searchStarted == this.searchStarted &&
+          other.lastUpdated == this.lastUpdated &&
+          other.isCompleted == this.isCompleted);
+}
+
+class PackageSearchStateTableCompanion
+    extends UpdateCompanion<PackageSearchStateTableData> {
+  final Value<String> searchId;
+  final Value<String> allPackagesJson;
+  final Value<int> currentIndex;
+  final Value<int> totalCount;
+  final Value<DateTime> searchStarted;
+  final Value<DateTime> lastUpdated;
+  final Value<bool> isCompleted;
+  final Value<int> rowid;
+  const PackageSearchStateTableCompanion({
+    this.searchId = const Value.absent(),
+    this.allPackagesJson = const Value.absent(),
+    this.currentIndex = const Value.absent(),
+    this.totalCount = const Value.absent(),
+    this.searchStarted = const Value.absent(),
+    this.lastUpdated = const Value.absent(),
+    this.isCompleted = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PackageSearchStateTableCompanion.insert({
+    required String searchId,
+    required String allPackagesJson,
+    this.currentIndex = const Value.absent(),
+    required int totalCount,
+    required DateTime searchStarted,
+    this.lastUpdated = const Value.absent(),
+    this.isCompleted = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : searchId = Value(searchId),
+       allPackagesJson = Value(allPackagesJson),
+       totalCount = Value(totalCount),
+       searchStarted = Value(searchStarted);
+  static Insertable<PackageSearchStateTableData> custom({
+    Expression<String>? searchId,
+    Expression<String>? allPackagesJson,
+    Expression<int>? currentIndex,
+    Expression<int>? totalCount,
+    Expression<DateTime>? searchStarted,
+    Expression<DateTime>? lastUpdated,
+    Expression<bool>? isCompleted,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (searchId != null) 'search_id': searchId,
+      if (allPackagesJson != null) 'all_packages_json': allPackagesJson,
+      if (currentIndex != null) 'current_index': currentIndex,
+      if (totalCount != null) 'total_count': totalCount,
+      if (searchStarted != null) 'search_started': searchStarted,
+      if (lastUpdated != null) 'last_updated': lastUpdated,
+      if (isCompleted != null) 'is_completed': isCompleted,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PackageSearchStateTableCompanion copyWith({
+    Value<String>? searchId,
+    Value<String>? allPackagesJson,
+    Value<int>? currentIndex,
+    Value<int>? totalCount,
+    Value<DateTime>? searchStarted,
+    Value<DateTime>? lastUpdated,
+    Value<bool>? isCompleted,
+    Value<int>? rowid,
+  }) {
+    return PackageSearchStateTableCompanion(
+      searchId: searchId ?? this.searchId,
+      allPackagesJson: allPackagesJson ?? this.allPackagesJson,
+      currentIndex: currentIndex ?? this.currentIndex,
+      totalCount: totalCount ?? this.totalCount,
+      searchStarted: searchStarted ?? this.searchStarted,
+      lastUpdated: lastUpdated ?? this.lastUpdated,
+      isCompleted: isCompleted ?? this.isCompleted,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (searchId.present) {
+      map['search_id'] = Variable<String>(searchId.value);
+    }
+    if (allPackagesJson.present) {
+      map['all_packages_json'] = Variable<String>(allPackagesJson.value);
+    }
+    if (currentIndex.present) {
+      map['current_index'] = Variable<int>(currentIndex.value);
+    }
+    if (totalCount.present) {
+      map['total_count'] = Variable<int>(totalCount.value);
+    }
+    if (searchStarted.present) {
+      map['search_started'] = Variable<DateTime>(searchStarted.value);
+    }
+    if (lastUpdated.present) {
+      map['last_updated'] = Variable<DateTime>(lastUpdated.value);
+    }
+    if (isCompleted.present) {
+      map['is_completed'] = Variable<bool>(isCompleted.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PackageSearchStateTableCompanion(')
+          ..write('searchId: $searchId, ')
+          ..write('allPackagesJson: $allPackagesJson, ')
+          ..write('currentIndex: $currentIndex, ')
+          ..write('totalCount: $totalCount, ')
+          ..write('searchStarted: $searchStarted, ')
+          ..write('lastUpdated: $lastUpdated, ')
+          ..write('isCompleted: $isCompleted, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$PackageDatabase extends GeneratedDatabase {
   _$PackageDatabase(QueryExecutor e) : super(e);
   $PackageDatabaseManager get managers => $PackageDatabaseManager(this);
   late final $PackageDataTableTable packageDataTable = $PackageDataTableTable(
     this,
   );
+  late final $PackageSearchStateTableTable packageSearchStateTable =
+      $PackageSearchStateTableTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [packageDataTable];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+    packageDataTable,
+    packageSearchStateTable,
+  ];
 }
 
 typedef $$PackageDataTableTableCreateCompanionBuilder =
@@ -953,10 +1479,291 @@ typedef $$PackageDataTableTableProcessedTableManager =
       PackageDataTableData,
       PrefetchHooks Function()
     >;
+typedef $$PackageSearchStateTableTableCreateCompanionBuilder =
+    PackageSearchStateTableCompanion Function({
+      required String searchId,
+      required String allPackagesJson,
+      Value<int> currentIndex,
+      required int totalCount,
+      required DateTime searchStarted,
+      Value<DateTime> lastUpdated,
+      Value<bool> isCompleted,
+      Value<int> rowid,
+    });
+typedef $$PackageSearchStateTableTableUpdateCompanionBuilder =
+    PackageSearchStateTableCompanion Function({
+      Value<String> searchId,
+      Value<String> allPackagesJson,
+      Value<int> currentIndex,
+      Value<int> totalCount,
+      Value<DateTime> searchStarted,
+      Value<DateTime> lastUpdated,
+      Value<bool> isCompleted,
+      Value<int> rowid,
+    });
+
+class $$PackageSearchStateTableTableFilterComposer
+    extends Composer<_$PackageDatabase, $PackageSearchStateTableTable> {
+  $$PackageSearchStateTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get searchId => $composableBuilder(
+    column: $table.searchId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get allPackagesJson => $composableBuilder(
+    column: $table.allPackagesJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get currentIndex => $composableBuilder(
+    column: $table.currentIndex,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get totalCount => $composableBuilder(
+    column: $table.totalCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get searchStarted => $composableBuilder(
+    column: $table.searchStarted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastUpdated => $composableBuilder(
+    column: $table.lastUpdated,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isCompleted => $composableBuilder(
+    column: $table.isCompleted,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PackageSearchStateTableTableOrderingComposer
+    extends Composer<_$PackageDatabase, $PackageSearchStateTableTable> {
+  $$PackageSearchStateTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get searchId => $composableBuilder(
+    column: $table.searchId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get allPackagesJson => $composableBuilder(
+    column: $table.allPackagesJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get currentIndex => $composableBuilder(
+    column: $table.currentIndex,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get totalCount => $composableBuilder(
+    column: $table.totalCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get searchStarted => $composableBuilder(
+    column: $table.searchStarted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastUpdated => $composableBuilder(
+    column: $table.lastUpdated,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isCompleted => $composableBuilder(
+    column: $table.isCompleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PackageSearchStateTableTableAnnotationComposer
+    extends Composer<_$PackageDatabase, $PackageSearchStateTableTable> {
+  $$PackageSearchStateTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get searchId =>
+      $composableBuilder(column: $table.searchId, builder: (column) => column);
+
+  GeneratedColumn<String> get allPackagesJson => $composableBuilder(
+    column: $table.allPackagesJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get currentIndex => $composableBuilder(
+    column: $table.currentIndex,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get totalCount => $composableBuilder(
+    column: $table.totalCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get searchStarted => $composableBuilder(
+    column: $table.searchStarted,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get lastUpdated => $composableBuilder(
+    column: $table.lastUpdated,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isCompleted => $composableBuilder(
+    column: $table.isCompleted,
+    builder: (column) => column,
+  );
+}
+
+class $$PackageSearchStateTableTableTableManager
+    extends
+        RootTableManager<
+          _$PackageDatabase,
+          $PackageSearchStateTableTable,
+          PackageSearchStateTableData,
+          $$PackageSearchStateTableTableFilterComposer,
+          $$PackageSearchStateTableTableOrderingComposer,
+          $$PackageSearchStateTableTableAnnotationComposer,
+          $$PackageSearchStateTableTableCreateCompanionBuilder,
+          $$PackageSearchStateTableTableUpdateCompanionBuilder,
+          (
+            PackageSearchStateTableData,
+            BaseReferences<
+              _$PackageDatabase,
+              $PackageSearchStateTableTable,
+              PackageSearchStateTableData
+            >,
+          ),
+          PackageSearchStateTableData,
+          PrefetchHooks Function()
+        > {
+  $$PackageSearchStateTableTableTableManager(
+    _$PackageDatabase db,
+    $PackageSearchStateTableTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$PackageSearchStateTableTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer:
+              () => $$PackageSearchStateTableTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer:
+              () => $$PackageSearchStateTableTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> searchId = const Value.absent(),
+                Value<String> allPackagesJson = const Value.absent(),
+                Value<int> currentIndex = const Value.absent(),
+                Value<int> totalCount = const Value.absent(),
+                Value<DateTime> searchStarted = const Value.absent(),
+                Value<DateTime> lastUpdated = const Value.absent(),
+                Value<bool> isCompleted = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PackageSearchStateTableCompanion(
+                searchId: searchId,
+                allPackagesJson: allPackagesJson,
+                currentIndex: currentIndex,
+                totalCount: totalCount,
+                searchStarted: searchStarted,
+                lastUpdated: lastUpdated,
+                isCompleted: isCompleted,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String searchId,
+                required String allPackagesJson,
+                Value<int> currentIndex = const Value.absent(),
+                required int totalCount,
+                required DateTime searchStarted,
+                Value<DateTime> lastUpdated = const Value.absent(),
+                Value<bool> isCompleted = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PackageSearchStateTableCompanion.insert(
+                searchId: searchId,
+                allPackagesJson: allPackagesJson,
+                currentIndex: currentIndex,
+                totalCount: totalCount,
+                searchStarted: searchStarted,
+                lastUpdated: lastUpdated,
+                isCompleted: isCompleted,
+                rowid: rowid,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          BaseReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PackageSearchStateTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$PackageDatabase,
+      $PackageSearchStateTableTable,
+      PackageSearchStateTableData,
+      $$PackageSearchStateTableTableFilterComposer,
+      $$PackageSearchStateTableTableOrderingComposer,
+      $$PackageSearchStateTableTableAnnotationComposer,
+      $$PackageSearchStateTableTableCreateCompanionBuilder,
+      $$PackageSearchStateTableTableUpdateCompanionBuilder,
+      (
+        PackageSearchStateTableData,
+        BaseReferences<
+          _$PackageDatabase,
+          $PackageSearchStateTableTable,
+          PackageSearchStateTableData
+        >,
+      ),
+      PackageSearchStateTableData,
+      PrefetchHooks Function()
+    >;
 
 class $PackageDatabaseManager {
   final _$PackageDatabase _db;
   $PackageDatabaseManager(this._db);
   $$PackageDataTableTableTableManager get packageDataTable =>
       $$PackageDataTableTableTableManager(_db, _db.packageDataTable);
+  $$PackageSearchStateTableTableTableManager get packageSearchStateTable =>
+      $$PackageSearchStateTableTableTableManager(
+        _db,
+        _db.packageSearchStateTable,
+      );
 }

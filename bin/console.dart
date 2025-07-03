@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:console/console.dart';
@@ -22,6 +23,12 @@ void main(List<String> arguments) async {
     case 'csv':
       await exportToCSV();
       break;
+    case 'status':
+      await showSearchStatus();
+      break;
+    case 'clear':
+      await clearSearchState();
+      break;
     case 'help':
     case '--help':
     case '-h':
@@ -43,34 +50,100 @@ void printUsage() {
   print('  fetch    Fetch and store all packages with analyzer dependency');
   print('  list     List all packages currently stored in the database');
   print('  csv      Export all package data to a CSV file');
+  print('  status   Show current search progress and state');
+  print('  clear    Clear search state (use if you want to restart)');
   print('  help     Show this help message');
   print('');
   print('Examples:');
   print('  dart run bin/console.dart fetch');
   print('  dart run bin/console.dart list');
   print('  dart run bin/console.dart csv');
+  print('  dart run bin/console.dart status');
 }
 
 /// Performs the fetch operation to get all packages with analyzer dependency
 Future<void> performFetch() async {
   final client = PubClient();
-
-  print('Searching for packages with analyzer dependency...');
-
-  // Fetch all pages of search results
-  final allPackages = await fetchAllPackagesWithPagination(client);
-
-  print('Found ${allPackages.length} packages total across all pages');
-
-  // Create a service instance to reuse across operations for better performance
   final service = PackageDataService.create();
+  const searchId = 'analyzer_dependency';
 
   try {
-    int processedCount = 0;
+    print('Searching for packages with analyzer dependency...');
+
+    // Check if we have an existing search state to resume
+    final existingState = await service.getSearchState(searchId);
+
+    List<SerializablePackage> allPackages;
+    int startIndex = 0;
+    DateTime searchStarted;
+
+    if (existingState != null && !existingState.isCompleted) {
+      // Resume from existing state
+      print(
+        'Found existing search state. Resuming from index ${existingState.currentIndex}...',
+      );
+      final packagesJson = jsonDecode(existingState.allPackagesJson) as List;
+      allPackages =
+          packagesJson
+              .map(
+                (json) =>
+                    SerializablePackage.fromJson(json as Map<String, dynamic>),
+              )
+              .toList();
+      startIndex = existingState.currentIndex;
+      searchStarted = existingState.searchStarted;
+      print(
+        'Resuming processing of ${allPackages.length} packages from index $startIndex',
+      );
+    } else {
+      // Start fresh - fetch all packages and persist the list
+      print('Starting new search...');
+      searchStarted = DateTime.now();
+
+      try {
+        final packageResults = await fetchAllPackagesWithAnalyzerDependency(
+          client,
+        );
+        allPackages =
+            packageResults
+                .map((pkg) => SerializablePackage(pkg.package))
+                .toList();
+
+        print(
+          'Found ${allPackages.length} packages total. Saving search state...',
+        );
+
+        // Save the initial search state
+        await service.saveSearchState(
+          searchId: searchId,
+          allPackagesJson: jsonEncode(
+            allPackages.map((pkg) => pkg.toJson()).toList(),
+          ),
+          currentIndex: 0,
+          totalCount: allPackages.length,
+          searchStarted: searchStarted,
+          isCompleted: false,
+        );
+      } catch (e) {
+        if (e.toString().contains('rate limit')) {
+          print(
+            'Rate limit reached while fetching package list. Please wait a few minutes and try again.',
+          );
+          print(
+            'The search will be resumed automatically when you run fetch again.',
+          );
+          return;
+        }
+        rethrow;
+      }
+    }
+
+    int processedCount = startIndex;
     int alreadyStoredCount = 0;
     int newlyFetchedCount = 0;
 
-    for (final package in allPackages) {
+    for (int i = startIndex; i < allPackages.length; i++) {
+      final package = allPackages[i];
       processedCount++;
       print(
         '\n[$processedCount/${allPackages.length}] Processing: ${package.package}',
@@ -106,17 +179,27 @@ Future<void> performFetch() async {
         }
       }
 
-      // Add a small delay to be respectful to the API
+      // Update progress every 5 packages
       if (processedCount % 5 == 0) {
+        await service.updateSearchProgress(searchId, processedCount);
+        print('  → Progress saved (${processedCount}/${allPackages.length})');
         print('  (Pausing briefly to be respectful to the API...)');
         await Future.delayed(const Duration(milliseconds: 500));
       }
     }
 
+    // Mark as completed
+    await service.updateSearchProgress(
+      searchId,
+      allPackages.length,
+      isCompleted: true,
+    );
+
     print('\n--- Summary ---');
     print('Total packages processed: $processedCount');
     print('Already stored: $alreadyStoredCount');
     print('Newly fetched and stored: $newlyFetchedCount');
+    print('Search completed at: ${DateTime.now()}');
 
     // Show a sample of stored packages
     print('\n--- Sample of stored packages ---');
@@ -133,6 +216,14 @@ Future<void> performFetch() async {
     if (allStored.length > sampleSize) {
       print('   ... and ${allStored.length - sampleSize} more packages');
     }
+
+    // Optionally clear the search state after successful completion
+    print('\nClearing search state...');
+    await service.clearSearchState(searchId);
+    print('✓ Search state cleared');
+  } catch (e) {
+    print('Error during fetch operation: $e');
+    print('Search state has been preserved for resumption.');
   } finally {
     await service.close();
   }
@@ -265,52 +356,91 @@ String _escapeCsvField(String field) {
   return field;
 }
 
-Future<SearchResults> listPackages(PubClient client) async {
-  return await client.search(
-    '', // Empty search term to get all packages with the dependency tag
-    tags: [PackageTag.dependency('analyzer')],
-  );
-}
-
-/// Fetches all packages with analyzer dependency using pagination
+/// Fetches all packages with analyzer dependency using the built-in fetchAllPackages method
 ///
-/// Iterates through all pages of search results to get the complete list
+/// Uses the pub_api_client's built-in recursive paging to get the complete list
 /// of packages that depend on the analyzer package.
-Future<List<PackageResult>> fetchAllPackagesWithPagination(
+Future<List<PackageResult>> fetchAllPackagesWithAnalyzerDependency(
   PubClient client,
 ) async {
-  final allPackages = <PackageResult>[];
-  SearchResults? currentResults;
-  int pageCount = 0;
+  print('Fetching all packages with analyzer dependency...');
 
-  // Get first page
-  currentResults = await listPackages(client);
-  allPackages.addAll(currentResults.packages);
-  pageCount++;
-
-  print('Page $pageCount: Found ${currentResults.packages.length} packages');
-
-  // Continue fetching while there are more pages
-  while (currentResults?.next != null) {
-    try {
-      currentResults = await client.nextPage(currentResults!.next!);
-      allPackages.addAll(currentResults.packages);
-      pageCount++;
-
-      print(
-        'Page $pageCount: Found ${currentResults.packages.length} packages (total: ${allPackages.length})',
-      );
-
-      // Small delay between page requests to be respectful to the API
-      await Future.delayed(const Duration(milliseconds: 200));
-    } catch (e) {
-      print('Error fetching page $pageCount: $e');
-      break;
-    }
-  }
+  // Use the built-in fetchAllPackages method with dependency tag
+  final allPackages = await client.fetchAllPackages(
+    '', // Empty search query to get all packages
+    tags: [PackageTag.dependency('analyzer')],
+  );
 
   print(
-    'Completed pagination: $pageCount pages, ${allPackages.length} total packages',
+    'Completed: Found ${allPackages.length} total packages with analyzer dependency',
   );
   return allPackages;
+}
+
+/// Shows the current search status and progress
+Future<void> showSearchStatus() async {
+  final service = PackageDataService.create();
+  const searchId = 'analyzer_dependency';
+
+  try {
+    final state = await service.getSearchState(searchId);
+
+    if (state == null) {
+      print(
+        'No search state found. Run "dart run bin/console.dart fetch" to start.',
+      );
+      return;
+    }
+
+    print('Search Status:');
+    print('  Search ID: ${state.searchId}');
+    print('  Started: ${state.searchStarted}');
+    print('  Last Updated: ${state.lastUpdated}');
+    print('  Progress: ${state.currentIndex}/${state.totalCount} packages');
+    print('  Completed: ${state.isCompleted ? 'Yes' : 'No'}');
+
+    final percentage = (state.currentIndex / state.totalCount * 100)
+        .toStringAsFixed(1);
+    print('  Percentage: $percentage%');
+
+    if (!state.isCompleted) {
+      final remaining = state.totalCount - state.currentIndex;
+      print('  Remaining: $remaining packages');
+      print('');
+      print('Run "dart run bin/console.dart fetch" to continue processing.');
+    } else {
+      print('');
+      print(
+        'Search completed! Run "dart run bin/console.dart clear" to remove search state.',
+      );
+    }
+  } finally {
+    await service.close();
+  }
+}
+
+/// Clears the search state
+Future<void> clearSearchState() async {
+  final service = PackageDataService.create();
+  const searchId = 'analyzer_dependency';
+
+  try {
+    final state = await service.getSearchState(searchId);
+
+    if (state == null) {
+      print('No search state found to clear.');
+      return;
+    }
+
+    await service.clearSearchState(searchId);
+    print('✓ Search state cleared successfully.');
+    print(
+      '  Previous progress: ${state.currentIndex}/${state.totalCount} packages',
+    );
+    print('  Started: ${state.searchStarted}');
+    print('');
+    print('You can now run "dart run bin/console.dart fetch" to start fresh.');
+  } finally {
+    await service.close();
+  }
 }

@@ -74,6 +74,48 @@ class PackageDataService {
     await _database.touchPackageData(packageName);
   }
 
+  /// Saves the search state for resuming interrupted operations
+  Future<void> saveSearchState({
+    required String searchId,
+    required String allPackagesJson,
+    required int currentIndex,
+    required int totalCount,
+    required DateTime searchStarted,
+    required bool isCompleted,
+  }) async {
+    await _database.saveSearchState(
+      searchId: searchId,
+      allPackagesJson: allPackagesJson,
+      currentIndex: currentIndex,
+      totalCount: totalCount,
+      searchStarted: searchStarted,
+      isCompleted: isCompleted,
+    );
+  }
+
+  /// Retrieves the search state for resuming operations
+  Future<PackageSearchStateTableData?> getSearchState(String searchId) async {
+    return await _database.getSearchState(searchId);
+  }
+
+  /// Updates the current processing index during fetch operations
+  Future<void> updateSearchProgress(
+    String searchId,
+    int currentIndex, {
+    bool? isCompleted,
+  }) async {
+    await _database.updateSearchProgress(
+      searchId,
+      currentIndex,
+      isCompleted: isCompleted,
+    );
+  }
+
+  /// Clears the search state (typically after completion)
+  Future<void> clearSearchState(String searchId) async {
+    await _database.clearSearchState(searchId);
+  }
+
   /// Closes the database connection
   ///
   /// Should be called when the service is no longer needed
