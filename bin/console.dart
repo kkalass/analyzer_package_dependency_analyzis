@@ -267,7 +267,7 @@ String _escapeCsvField(String field) {
 
 Future<SearchResults> listPackages(PubClient client) async {
   return await client.search(
-    'query',
+    '', // Empty search term to get all packages with the dependency tag
     tags: [PackageTag.dependency('analyzer')],
   );
 }
