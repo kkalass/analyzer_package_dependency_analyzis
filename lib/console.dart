@@ -40,7 +40,7 @@ Future<PackageData?> fetchPackageData(client, String packageName) async {
   final pubspecInfo =
       repoUrl == null ? null : await downloadAndExtractAnalyzerVersion(repoUrl);
   return PackageData(
-    packageName: 'postgres_prepared',
+    packageName: packageName,
     devAnalyzerVersion: pubspecInfo?.analyzerVersion,
     devVersion: pubspecInfo?.version,
     devDate: DateTime.now(),
@@ -54,12 +54,22 @@ Future<PackageData?> fetchPackageData(client, String packageName) async {
 ///
 /// Handles both GitHub and GitLab repositories by converting the repo URL to raw file URL.
 /// Searches for analyzer package in both dependencies and dev_dependencies sections.
+/// Attempts multiple strategies for finding the pubspec.yaml file.
 Future<PubspecInfo?> downloadAndExtractAnalyzerVersion(String repoUrl) async {
   try {
     final pubspecUrl = convertToPubspecRawUrl(repoUrl);
     print('Downloading pubspec.yaml from: $pubspecUrl');
 
-    final response = await http.get(Uri.parse(pubspecUrl));
+    var response = await http.get(Uri.parse(pubspecUrl));
+
+    // If main branch fails and it's a GitHub repo, try master branch
+    if (response.statusCode == 404 && repoUrl.contains('github.com')) {
+      final masterUrl = pubspecUrl.replaceAll('/main/', '/master/');
+      if (masterUrl != pubspecUrl) {
+        print('Trying master branch: $masterUrl');
+        response = await http.get(Uri.parse(masterUrl));
+      }
+    }
 
     if (response.statusCode == 200) {
       final yamlContent = response.body;
@@ -78,7 +88,8 @@ Future<PubspecInfo?> downloadAndExtractAnalyzerVersion(String repoUrl) async {
 /// Converts repository URL to raw pubspec.yaml URL
 ///
 /// Supports GitHub and GitLab repositories by transforming the URL format
-/// to point directly to the raw pubspec.yaml file.
+/// to point directly to the raw pubspec.yaml file. Handles various repository
+/// structures including monorepos with subdirectories.
 String convertToPubspecRawUrl(String repoUrl) {
   // Remove trailing slash if present
   final cleanUrl =
@@ -87,7 +98,32 @@ String convertToPubspecRawUrl(String repoUrl) {
           : repoUrl;
 
   if (cleanUrl.contains('github.com')) {
-    // Convert GitHub URL: https://github.com/user/repo -> https://raw.githubusercontent.com/user/repo/main/pubspec.yaml
+    // Handle special GitHub URL patterns that include subdirectories or specific paths
+    if (cleanUrl.contains('/tree/')) {
+      // Extract base repo URL and try to construct proper raw URL
+      final parts = cleanUrl.split('/tree/');
+      if (parts.length >= 2) {
+        final baseRepo = parts[0];
+        final pathParts = parts[1].split('/');
+        if (pathParts.isNotEmpty) {
+          final branch = pathParts[0];
+          final subPath =
+              pathParts.length > 1 ? '/${pathParts.skip(1).join('/')}' : '';
+          final githubRawUrl = baseRepo
+              .replaceFirst(
+                'https://github.com/',
+                'https://raw.githubusercontent.com/',
+              )
+              .replaceFirst(
+                'http://github.com/',
+                'https://raw.githubusercontent.com/',
+              );
+          return '$githubRawUrl/$branch$subPath/pubspec.yaml';
+        }
+      }
+    }
+
+    // Standard GitHub conversion
     final githubRawUrl = cleanUrl
         .replaceFirst(
           'https://github.com/',
@@ -97,6 +133,8 @@ String convertToPubspecRawUrl(String repoUrl) {
           'http://github.com/',
           'https://raw.githubusercontent.com/',
         );
+
+    // Try both main and master branches
     return '$githubRawUrl/main/pubspec.yaml';
   } else if (cleanUrl.contains('gitlab.com')) {
     // Convert GitLab URL: https://gitlab.com/user/repo -> https://gitlab.com/user/repo/-/raw/main/pubspec.yaml
