@@ -5,7 +5,7 @@ import 'package:yaml/yaml.dart';
 ///
 /// Handles both GitHub and GitLab repositories by converting the repo URL to raw file URL.
 /// Searches for analyzer package in both dependencies and dev_dependencies sections.
-Future<void> downloadAndExtractAnalyzerVersion(String repoUrl) async {
+Future<String?> downloadAndExtractAnalyzerVersion(String repoUrl) async {
   try {
     final pubspecUrl = convertToPubspecRawUrl(repoUrl);
     print('Downloading pubspec.yaml from: $pubspecUrl');
@@ -14,13 +14,7 @@ Future<void> downloadAndExtractAnalyzerVersion(String repoUrl) async {
 
     if (response.statusCode == 200) {
       final yamlContent = response.body;
-      final analyzerVersion = extractAnalyzerVersion(yamlContent);
-
-      if (analyzerVersion != null) {
-        print('Analyzer version found: $analyzerVersion');
-      } else {
-        print('Analyzer package not found in dependencies or dev_dependencies');
-      }
+      return extractAnalyzerVersion(yamlContent);
     } else {
       print(
         'Failed to download pubspec.yaml. Status code: ${response.statusCode}',
