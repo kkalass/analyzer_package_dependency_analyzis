@@ -6,9 +6,11 @@ void main(List<String> arguments) async {
   final client = PubClient();
 
   print('Searching for packages with analyzer dependency...');
-  final searchResults = await listPackages(client);
-
-  print('Found ${searchResults.packages.length} packages to process');
+  
+  // Fetch all pages of search results
+  final allPackages = await fetchAllPackagesWithPagination(client);
+  
+  print('Found ${allPackages.length} packages total across all pages');
 
   // Create a service instance to reuse across operations for better performance
   final service = PackageDataService.create();
@@ -18,10 +20,10 @@ void main(List<String> arguments) async {
     int alreadyStoredCount = 0;
     int newlyFetchedCount = 0;
 
-    for (final package in searchResults.packages) {
+    for (final package in allPackages) {
       processedCount++;
       print(
-        '\n[$processedCount/${searchResults.packages.length}] Processing: ${package.package}',
+        '\n[$processedCount/${allPackages.length}] Processing: ${package.package}',
       );
 
       // Check if we already have this package stored
@@ -91,4 +93,41 @@ Future<SearchResults> listPackages(PubClient client) async {
     'query',
     tags: [PackageTag.dependency('analyzer')],
   );
+}
+
+/// Fetches all packages with analyzer dependency using pagination
+///
+/// Iterates through all pages of search results to get the complete list
+/// of packages that depend on the analyzer package.
+Future<List<PackageResult>> fetchAllPackagesWithPagination(PubClient client) async {
+  final allPackages = <PackageResult>[];
+  SearchResults? currentResults;
+  int pageCount = 0;
+
+  // Get first page
+  currentResults = await listPackages(client);
+  allPackages.addAll(currentResults.packages);
+  pageCount++;
+
+  print('Page $pageCount: Found ${currentResults.packages.length} packages');
+
+  // Continue fetching while there are more pages
+  while (currentResults?.next != null) {
+    try {
+      currentResults = await client.nextPage(currentResults!.next!);
+      allPackages.addAll(currentResults.packages);
+      pageCount++;
+
+      print('Page $pageCount: Found ${currentResults.packages.length} packages (total: ${allPackages.length})');
+
+      // Small delay between page requests to be respectful to the API
+      await Future.delayed(const Duration(milliseconds: 200));
+    } catch (e) {
+      print('Error fetching page $pageCount: $e');
+      break;
+    }
+  }
+
+  print('Completed pagination: $pageCount pages, ${allPackages.length} total packages');
+  return allPackages;
 }
