@@ -211,7 +211,7 @@ Future<void> performFetch() async {
       // Update progress every 5 packages
       if (processedCount % 5 == 0) {
         await service.updateSearchProgress(searchId, processedCount);
-        print('  → Progress saved (${processedCount}/${allPackages.length})');
+        print('  → Progress saved ($processedCount/${allPackages.length})');
         print('  (Pausing briefly to be respectful to the API...)');
         await Future.delayed(const Duration(milliseconds: 500));
       }

@@ -73,9 +73,9 @@ void main() {
           await service.storePackageData(
             packageName: packages[i],
             devAnalyzerVersion: '^${i + 6}.0.0',
-            devVersion: '1.${i}.0',
+            devVersion: '1.$i.0',
             devDate: now.add(Duration(minutes: i)),
-            publishedVersion: '1.${i}.0',
+            publishedVersion: '1.$i.0',
           );
         }
 
