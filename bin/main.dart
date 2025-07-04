@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:console/console.dart';
+import 'package:console/package_analysis.dart';
 import 'package:console/package_data_service.dart';
 import 'package:pub_api_client/pub_api_client.dart';
 
@@ -61,7 +61,7 @@ void main(List<String> arguments) async {
 void printUsage() {
   print('Package Dependency Analysis Tool');
   print('');
-  print('Usage: dart run bin/console.dart <command> [target_package]');
+  print('Usage: dart run bin/main.dart <command> [target_package]');
   print('');
   print('Commands:');
   print(
@@ -80,11 +80,11 @@ void printUsage() {
   print('  help           Show this help message');
   print('');
   print('Examples:');
-  print('  dart run bin/console.dart fetch analyzer');
-  print('  dart run bin/console.dart fetch flutter');
-  print('  dart run bin/console.dart list analyzer');
-  print('  dart run bin/console.dart csv');
-  print('  dart run bin/console.dart status analyzer');
+  print('  dart run bin/main.dart fetch analyzer');
+  print('  dart run bin/main.dart fetch flutter');
+  print('  dart run bin/main.dart list analyzer');
+  print('  dart run bin/main.dart csv');
+  print('  dart run bin/main.dart status analyzer');
 }
 
 /// Performs the fetch operation to get all packages with dependency on target package
@@ -146,7 +146,7 @@ Future<void> performFetch(String targetPackage) async {
         startIndex = existingState.currentIndex;
       } else {
         print('Fetch operation is already completed!');
-        print('Use "dart run bin/console.dart clear" to reset and start over.');
+        print('Use "dart run bin/main.dart clear" to reset and start over.');
         return;
       }
     } else {
@@ -207,7 +207,10 @@ Future<void> performFetch(String targetPackage) async {
       );
 
       // Check if we already have this package stored
-      final existingData = await service.getPackageData(package.package, targetPackage);
+      final existingData = await service.getPackageData(
+        package.package,
+        targetPackage,
+      );
 
       if (existingData != null) {
         alreadyStoredCount++;
@@ -297,12 +300,12 @@ Future<void> listStoredPackages(String? targetPackage) async {
           'No packages found in database for target package "$targetPackage".',
         );
         print(
-          'Run "dart run bin/console.dart fetch $targetPackage" to fetch package data.',
+          'Run "dart run bin/main.dart fetch $targetPackage" to fetch package data.',
         );
       } else {
         print('No packages found in database.');
         print(
-          'Run "dart run bin/console.dart fetch <package>" to fetch package data.',
+          'Run "dart run bin/main.dart fetch <package>" to fetch package data.',
         );
       }
       return;
@@ -365,12 +368,12 @@ Future<void> exportToCSV(String? targetPackage) async {
           'No packages found in database for target package "$targetPackage".',
         );
         print(
-          'Run "dart run bin/console.dart fetch $targetPackage" to fetch package data first.',
+          'Run "dart run bin/main.dart fetch $targetPackage" to fetch package data first.',
         );
       } else {
         print('No packages found in database.');
         print(
-          'Run "dart run bin/console.dart fetch <package>" to fetch package data first.',
+          'Run "dart run bin/main.dart fetch <package>" to fetch package data first.',
         );
       }
       return;
@@ -662,7 +665,7 @@ Future<void> showSearchStatus(String targetPackage) async {
 
     if (state == null) {
       print(
-        'No search state found for target package "$targetPackage". Run "dart run bin/console.dart fetch $targetPackage" to start.',
+        'No search state found for target package "$targetPackage". Run "dart run bin/main.dart fetch $targetPackage" to start.',
       );
       return;
     }
@@ -690,19 +693,19 @@ Future<void> showSearchStatus(String targetPackage) async {
     if (!state.discoveryCompleted) {
       print('');
       print(
-        'Currently discovering packages. Run "dart run bin/console.dart fetch $targetPackage" to continue.',
+        'Currently discovering packages. Run "dart run bin/main.dart fetch $targetPackage" to continue.',
       );
     } else if (!state.processingCompleted) {
       final remaining = state.totalCount - state.currentIndex;
       print('  Remaining: $remaining packages');
       print('');
       print(
-        'Run "dart run bin/console.dart fetch $targetPackage" to continue processing.',
+        'Run "dart run bin/main.dart fetch $targetPackage" to continue processing.',
       );
     } else {
       print('');
       print(
-        'Search completed! Run "dart run bin/console.dart clear $targetPackage" to remove search state.',
+        'Search completed! Run "dart run bin/main.dart clear $targetPackage" to remove search state.',
       );
     }
   } finally {
@@ -733,7 +736,7 @@ Future<void> clearSearchState(String targetPackage) async {
     print('  Started: ${state.searchStarted}');
     print('');
     print(
-      'You can now run "dart run bin/console.dart fetch $targetPackage" to start fresh.',
+      'You can now run "dart run bin/main.dart fetch $targetPackage" to start fresh.',
     );
   } finally {
     await service.close();

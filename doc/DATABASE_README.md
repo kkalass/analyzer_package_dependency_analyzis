@@ -28,7 +28,7 @@ This project now includes persistent storage of package data using the Drift dat
 - Provides convenient methods for CRUD operations
 - Implements proper resource cleanup
 
-#### 3. Integration Functions (`lib/console.dart`)
+#### 3. Integration Functions (`lib/package_analysis.dart`)
 - `fetchAndStorePackageData()`: Combines API fetching with database storage
 - `getStoredPackageData()`: Retrieves package data from database
 - `listAllStoredPackages()`: Lists all stored packages

@@ -22,8 +22,8 @@ The application follows clean architecture principles with clear separation of c
 
 - **Database Layer** (`lib/database.dart`): Drift-based SQLite database with automatic migrations
 - **Service Layer** (`lib/package_data_service.dart`): Clean abstraction for data operations
-- **Business Logic** (`lib/console.dart`): Core functionality for package analysis
-- **CLI Interface** (`bin/console.dart`): Command-line interface with multiple commands
+- **Business Logic** (`lib/package_analysis.dart`): Core functionality for package analysis
+- **CLI Interface** (`bin/main.dart`): Command-line interface with multiple commands
 - **Data Analysis** (`analyzer_version_analysis.ipynb`): Jupyter notebook for data analysis and visualization
 
 ## Installation
@@ -45,44 +45,44 @@ The tool can be configured to analyze dependencies for any package on pub.dev. B
 
 ```bash
 # Fetch all packages with specified dependency (example: analyzer)
-dart run bin/console.dart fetch
+dart run bin/main.dart fetch
 
 # List all stored packages in the database
-dart run bin/console.dart list
+dart run bin/main.dart list
 
 # Export package data to CSV file
-dart run bin/console.dart csv
+dart run bin/main.dart csv
 
 # Show current search progress and state
-dart run bin/console.dart status
+dart run bin/main.dart status
 
 # Clear search state (restart from beginning)
-dart run bin/console.dart clear
+dart run bin/main.dart clear
 
 # Show help information
-dart run bin/console.dart help
+dart run bin/main.dart help
 ```
 
 ### Example Workflow
 
 1. **Start data collection**:
    ```bash
-   dart run bin/console.dart fetch
+   dart run bin/main.dart fetch
    ```
 
 2. **Monitor progress** (in another terminal):
    ```bash
-   dart run bin/console.dart status
+   dart run bin/main.dart status
    ```
 
 3. **Export results when complete**:
    ```bash
-   dart run bin/console.dart csv
+   dart run bin/main.dart csv
    ```
 
 4. **View stored packages**:
    ```bash
-   dart run bin/console.dart list
+   dart run bin/main.dart list
    ```
 
 5. **Analyze the data** (optional):
@@ -125,7 +125,7 @@ The tool supports resuming interrupted operations:
 - **Processing Phase**: Individual package metadata collection
 - **State Persistence**: Current progress saved to database automatically
 
-If the process is interrupted, simply run `dart run bin/console.dart fetch` again to resume from where it left off.
+If the process is interrupted, simply run `dart run bin/main.dart fetch` again to resume from where it left off.
 
 ## Error Handling
 
@@ -175,7 +175,7 @@ The included Jupyter notebook (`analyzer_version_analysis.ipynb`) provides compr
 To use the analysis notebook:
 
 1. Ensure you have Jupyter installed: `pip install jupyter pandas matplotlib seaborn`
-2. Export your data: `dart run bin/console.dart csv`
+2. Export your data: `dart run bin/main.dart csv`
 3. Open the notebook: `jupyter notebook analyzer_version_analysis.ipynb`
 4. Update the CSV file path in the notebook to match your export file
 5. Run all cells to generate the analysis

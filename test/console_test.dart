@@ -1,4 +1,4 @@
-import 'package:console/console.dart';
+import 'package:console/package_analysis.dart';
 import 'package:test/test.dart';
 
 void main() {
