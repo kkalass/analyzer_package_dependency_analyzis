@@ -444,7 +444,7 @@ Future<void> exportToCSV(String? targetPackage) async {
 
     // Add header
     csvLines.add(
-      'Package Name,Target Package,Target Package Version,Dev Version,Dev Date,Published Date,Published Version,Repository URL,Created At,Updated At',
+      'Package Name,Target Package,Target Package Version,Dev Version,Dev Date,Published Date,Published Version,Repository URL,Download Count 30 Days,Like Count,Granted Points,Popularity Score,Max Points,Created At,Updated At',
     );
 
     // Add data rows
@@ -458,6 +458,11 @@ Future<void> exportToCSV(String? targetPackage) async {
         _escapeCsvField(pkg.publishedDate?.toIso8601String() ?? ''),
         _escapeCsvField(pkg.publishedVersion ?? ''),
         _escapeCsvField(pkg.repoUrl ?? ''),
+        _escapeCsvField(pkg.downloadCount30Days?.toString() ?? ''),
+        _escapeCsvField(pkg.likeCount?.toString() ?? ''),
+        _escapeCsvField(pkg.grantedPoints?.toString() ?? ''),
+        _escapeCsvField(pkg.popularityScore?.toString() ?? ''),
+        _escapeCsvField(pkg.maxPoints?.toString() ?? ''),
         _escapeCsvField(pkg.createdAt.toIso8601String()),
         _escapeCsvField(pkg.updatedAt.toIso8601String()),
       ].join(',');
@@ -476,12 +481,18 @@ Future<void> exportToCSV(String? targetPackage) async {
     final withTargetPackage =
         allStored.where((p) => p.devTargetPackageVersion != null).length;
     final withRepo = allStored.where((p) => p.repoUrl != null).length;
+    final withDownloadCount = allStored.where((p) => p.downloadCount30Days != null).length;
+    final withLikeCount = allStored.where((p) => p.likeCount != null).length;
+    final withPopularityScore = allStored.where((p) => p.popularityScore != null).length;
 
     print('');
     print('Export summary:');
     print('  Total packages: ${allStored.length}');
     print('  With target dependency: $withTargetPackage');
     print('  With repository URL: $withRepo');
+    print('  With download count: $withDownloadCount');
+    print('  With like count: $withLikeCount');
+    print('  With popularity score: $withPopularityScore');
     print('  File size: ${(await file.length() / 1024).toStringAsFixed(1)} KB');
   } catch (e) {
     print('Error exporting to CSV: $e');
