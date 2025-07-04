@@ -314,10 +314,8 @@ class PackageDatabase extends _$PackageDatabase {
       } catch (e) {
         // If we can't parse JSON, keep totalCount as 0
       }
-      
-      updateCompanion = updateCompanion.copyWith(
-        totalCount: Value(totalCount),
-      );
+
+      updateCompanion = updateCompanion.copyWith(totalCount: Value(totalCount));
     }
 
     await (update(packageSearchStateTable)
@@ -354,7 +352,9 @@ class PackageDatabase extends _$PackageDatabase {
         currentIndex: Value(
           0,
         ), // Reset processing index when updating pagination
-        totalCount: Value(totalCount), // Set to actual discovered packages count
+        totalCount: Value(
+          totalCount,
+        ), // Set to actual discovered packages count
         searchStarted: Value(DateTime.now()),
         lastUpdated: Value(DateTime.now()),
       ),
