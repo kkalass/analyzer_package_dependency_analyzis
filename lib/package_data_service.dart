@@ -93,6 +93,19 @@ class PackageDataService {
     return await _database.getAllPackageDataForTarget(targetPackage);
   }
 
+  /// Retrieves all stored package data for a specific target package within age limit
+  ///
+  /// Returns a list of package data for the given target package published within the specified months.
+  Future<List<PackageDataTableData>> getAllPackageDataForTargetWithinAge(
+    String targetPackage,
+    int maxAgeMonths,
+  ) async {
+    return await _database.getAllPackageDataForTargetWithinAge(
+      targetPackage,
+      maxAgeMonths,
+    );
+  }
+
   /// Deletes package data by package name and target package
   ///
   /// Returns the number of rows affected (0 if package not found, 1 if deleted).

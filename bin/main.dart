@@ -55,9 +55,12 @@ void main(List<String> arguments) async {
       }
       final lastNMinorVersions =
           arguments.length > 2 ? int.tryParse(arguments[2]) ?? 10 : 10;
+      final maxAgeMonths =
+          arguments.length > 3 ? int.tryParse(arguments[3]) : null;
       await generateVersionCompatibilityReport(
         arguments[1],
         lastNMinorVersions,
+        maxAgeMonths: maxAgeMonths,
       );
       break;
     case 'check-version':
@@ -102,7 +105,7 @@ void printUsage() {
     '  clear <pkg>    Clear search state for target package (use if you want to restart)',
   );
   print(
-    '  report <pkg> [n]  Generate version compatibility report for target package (last n minor versions, default: 10)',
+    '  report <pkg> [n] [age]  Generate version compatibility report for target package (last n minor versions, max age in months)',
   );
   print(
     '  check-version <pkg> <version>  List all dependents that support a specific version',
@@ -116,6 +119,7 @@ void printUsage() {
   print('  dart run bin/main.dart csv');
   print('  dart run bin/main.dart status analyzer');
   print('  dart run bin/main.dart report analyzer 5');
+  print('  dart run bin/main.dart report analyzer 5 12');
   print('  dart run bin/main.dart check-version analyzer 7.5.4');
 }
 
@@ -799,14 +803,21 @@ Future<void> clearSearchState(String targetPackage) async {
 /// Generates version compatibility report
 Future<void> generateVersionCompatibilityReport(
   String targetPackage,
-  int lastNMinorVersions,
-) async {
+  int lastNMinorVersions, {
+  int? maxAgeMonths,
+}) async {
   final service = PackageDataService.create();
   final client = PubClient();
   final versionAnalysisService = VersionAnalysisService(service, client);
 
   try {
-    print('🔍 Generating version compatibility report for "$targetPackage"...');
+    final ageText =
+        maxAgeMonths != null
+            ? ' (packages within last $maxAgeMonths months)'
+            : '';
+    print(
+      '🔍 Generating version compatibility report for "$targetPackage"$ageText...',
+    );
     print('');
 
     // Step 1: Fetch target package versions from pub.dev
@@ -815,13 +826,17 @@ Future<void> generateVersionCompatibilityReport(
 
     // Step 2: Analyze version constraints for all dependents
     print('🔍 Step 2: Analyzing version constraints for dependents...');
-    await versionAnalysisService.analyzeVersionConstraints(targetPackage);
+    await versionAnalysisService.analyzeVersionConstraints(
+      targetPackage,
+      maxAgeMonths: maxAgeMonths,
+    );
 
     // Step 3: Generate compatibility report
     print('📊 Step 3: Generating compatibility report...');
     await versionAnalysisService.generateVersionCompatibilityReport(
       targetPackage,
       lastNMinorVersions,
+      maxAgeMonths: maxAgeMonths,
     );
 
     // Step 4: Display report

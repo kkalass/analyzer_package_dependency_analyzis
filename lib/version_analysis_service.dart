@@ -41,15 +41,30 @@ class VersionAnalysisService {
   }
 
   /// Analyzes version constraints and stores supported versions for each dependent
-  Future<void> analyzeVersionConstraints(String targetPackage) async {
+  Future<void> analyzeVersionConstraints(
+    String targetPackage, {
+    int? maxAgeMonths,
+  }) async {
     print('Analyzing version constraints for $targetPackage...');
 
-    final dependents = await _packageDataService.getAllPackageDataForTarget(
-      targetPackage,
-    );
+    final dependents =
+        maxAgeMonths != null
+            ? await _packageDataService.getAllPackageDataForTargetWithinAge(
+              targetPackage,
+              maxAgeMonths,
+            )
+            : await _packageDataService.getAllPackageDataForTarget(
+              targetPackage,
+            );
     final targetVersions = await _packageDataService.getTargetPackageVersions(
       targetPackage,
     );
+
+    if (maxAgeMonths != null) {
+      print(
+        'Filtering to packages published within the last $maxAgeMonths months',
+      );
+    }
 
     print(
       'Found ${dependents.length} dependents and ${targetVersions.length} target versions',
@@ -103,18 +118,35 @@ class VersionAnalysisService {
   /// Generates version compatibility report for the last n minor versions
   Future<void> generateVersionCompatibilityReport(
     String targetPackage,
-    int lastNMinorVersions,
-  ) async {
+    int lastNMinorVersions, {
+    int? maxAgeMonths,
+  }) async {
+    final ageText =
+        maxAgeMonths != null
+            ? ' (packages within last $maxAgeMonths months)'
+            : '';
     print(
-      'Generating version compatibility report for $targetPackage (last $lastNMinorVersions minor versions)...',
+      'Generating version compatibility report for $targetPackage (last $lastNMinorVersions minor versions)$ageText...',
     );
 
     final allVersions = await _packageDataService.getTargetPackageVersions(
       targetPackage,
     );
-    final dependents = await _packageDataService.getAllPackageDataForTarget(
-      targetPackage,
-    );
+    final dependents =
+        maxAgeMonths != null
+            ? await _packageDataService.getAllPackageDataForTargetWithinAge(
+              targetPackage,
+              maxAgeMonths,
+            )
+            : await _packageDataService.getAllPackageDataForTarget(
+              targetPackage,
+            );
+
+    if (maxAgeMonths != null) {
+      print(
+        'Filtering analysis to packages published within the last $maxAgeMonths months',
+      );
+    }
 
     // Group versions by major.minor
     final Map<String, List<TargetPackageVersionTableData>> versionsByMinor = {};

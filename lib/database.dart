@@ -286,6 +286,26 @@ class PackageDatabase extends _$PackageDatabase {
         .get();
   }
 
+  /// Retrieves all package data for a specific target package within age limit
+  Future<List<PackageDataTableData>> getAllPackageDataForTargetWithinAge(
+    String targetPackage,
+    int maxAgeMonths,
+  ) async {
+    final cutoffDate = DateTime.now().subtract(
+      Duration(days: maxAgeMonths * 30),
+    );
+
+    return (select(packageDataTable)
+          ..where(
+            (tbl) =>
+                tbl.targetPackage.equals(targetPackage) &
+                tbl.publishedDate.isNotNull() &
+                tbl.publishedDate.isBiggerOrEqualValue(cutoffDate),
+          )
+          ..orderBy([(tbl) => OrderingTerm.desc(tbl.createdAt)]))
+        .get();
+  }
+
   /// Deletes package data by package name and target package
   Future<int> deletePackageData(
     String packageName,
