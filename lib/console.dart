@@ -1,8 +1,7 @@
 import 'package:console/database.dart';
 import 'package:console/package_data_service.dart';
-import 'package:http/http.dart' as http;
 import 'package:pub_api_client/pub_api_client.dart';
-import 'package:yaml/yaml.dart';
+import 'package:pubspec_parse/pubspec_parse.dart';
 
 /// Simple model for serializing package names for persistence
 class SerializablePackage {
@@ -113,27 +112,38 @@ PubspecInfo? extractPubspecInfo(dynamic pubspecData, String targetPackage) {
       pubspecMap = pubspecData;
     } else if (pubspecData is Map<dynamic, dynamic>) {
       pubspecMap = Map<String, dynamic>.from(pubspecData);
-    } else if (pubspecData.runtimeType.toString().contains('Pubspec')) {
+    } else if (pubspecData is Pubspec) {
       // If it's a Pubspec object, try to access its properties
       final version = pubspecData.version?.toString() ?? 'unknown';
 
-      // Try to access dependencies
+      // Try to access dependency_overrides first (highest priority)
       String? targetPackageVersion;
       try {
-        final dependencies = pubspecData.dependencies;
-        if (dependencies != null && dependencies.containsKey(targetPackage)) {
-          targetPackageVersion = dependencies[targetPackage].toString();
+        final dependencyOverrides = pubspecData.dependencyOverrides;
+        if (dependencyOverrides.containsKey(targetPackage)) {
+          targetPackageVersion = dependencyOverrides[targetPackage].toString();
         }
       } catch (e) {
-        // Ignore error and try dev_dependencies
+        // Ignore error and try dependencies
+      }
+
+      // Try dependencies if not found in dependency_overrides
+      if (targetPackageVersion == null) {
+        try {
+          final dependencies = pubspecData.dependencies;
+          if (dependencies.containsKey(targetPackage)) {
+            targetPackageVersion = dependencies[targetPackage].toString();
+          }
+        } catch (e) {
+          // Ignore error and try dev_dependencies
+        }
       }
 
       // Try dev_dependencies if not found in dependencies
       if (targetPackageVersion == null) {
         try {
           final devDependencies = pubspecData.devDependencies;
-          if (devDependencies != null &&
-              devDependencies.containsKey(targetPackage)) {
+          if (devDependencies.containsKey(targetPackage)) {
             targetPackageVersion = devDependencies[targetPackage].toString();
           }
         } catch (e) {
@@ -149,11 +159,19 @@ PubspecInfo? extractPubspecInfo(dynamic pubspecData, String targetPackage) {
 
     if (pubspecMap == null) return null;
 
-    // Check dependencies section for target package
+    // Check dependency_overrides section first (highest priority)
     String? targetPackageVersion;
-    final dependencies = pubspecMap['dependencies'] as Map<String, dynamic>?;
-    if (dependencies?.containsKey(targetPackage) == true) {
-      targetPackageVersion = dependencies![targetPackage].toString();
+    final dependencyOverrides = pubspecMap['dependency_overrides'] as Map<String, dynamic>?;
+    if (dependencyOverrides?.containsKey(targetPackage) == true) {
+      targetPackageVersion = dependencyOverrides![targetPackage].toString();
+    }
+
+    // Check dependencies section if not found in dependency_overrides
+    if (targetPackageVersion == null) {
+      final dependencies = pubspecMap['dependencies'] as Map<String, dynamic>?;
+      if (dependencies?.containsKey(targetPackage) == true) {
+        targetPackageVersion = dependencies![targetPackage].toString();
+      }
     }
 
     // Check dev_dependencies section if not found in dependencies
