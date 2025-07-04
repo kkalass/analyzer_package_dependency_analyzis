@@ -7,7 +7,7 @@ This project now includes persistent storage of package data using the Drift dat
 ### Database Schema
 - **PackageDataTable**: Stores comprehensive package information including:
   - Package name (primary key)
-  - Dev analyzer version from repository pubspec.yaml
+  - target package version from repository pubspec.yaml
   - Dev version from repository
   - Dev data fetch date
   - Published date and version

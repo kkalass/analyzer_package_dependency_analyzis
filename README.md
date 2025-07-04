@@ -1,14 +1,14 @@
-# Package Analyzer Dependency Analysis Tool
+# Package Dependency Analysis Tool
 
-A command-line application that fetches and analyzes pub.dev packages that depend on the `analyzer` package. The tool provides comprehensive data collection, storage, and export capabilities for analyzing the ecosystem of packages that use Dart's analyzer library.
+A command-line application that fetches and analyzes pub.dev packages that depend on any specified package. The tool provides comprehensive data collection, storage, and export capabilities for analyzing the ecosystem of packages that use specific dependencies. For example, it can be used to analyze packages that depend on the `analyzer` package to understand the Dart analyzer library ecosystem.
 
 ## Features
 
-- **Package Discovery**: Searches pub.dev for all packages with analyzer dependency using pagination
+- **Package Discovery**: Searches pub.dev for all packages with specified dependency using pagination
 - **Metadata Collection**: Fetches detailed package information including:
   - Package name and published versions
   - Repository URLs (GitHub, GitLab, etc.)
-  - Analyzer version used in development (from pubspec.yaml)
+  - Target package version used in development (from pubspec.yaml)
   - Publication dates and development versions
 - **Persistent Storage**: SQLite database for reliable data persistence using Drift ORM
 - **Resume Capability**: Interrupted operations can be resumed from where they left off
@@ -37,10 +37,14 @@ The application follows clean architecture principles with clear separation of c
 
 ## Usage
 
+### Configuring Target Package
+
+The tool can be configured to analyze dependencies for any package on pub.dev. By default, it's configured to analyze the `analyzer` package as an example use case, but you can modify the configuration to target any package of interest.
+
 ### Available Commands
 
 ```bash
-# Fetch all packages with analyzer dependency
+# Fetch all packages with specified dependency (example: analyzer)
 dart run bin/console.dart fetch
 
 # List all stored packages in the database
@@ -94,7 +98,7 @@ The tool collects and stores the following information for each package:
 | Field | Description |
 |-------|-------------|
 | Package Name | Unique identifier from pub.dev |
-| Analyzer Version | Version constraint from dev pubspec.yaml |
+| Target Package Version | Version constraint from dev pubspec.yaml |
 | Dev Version | Development version from repository |
 | Dev Date | Timestamp when repository data was fetched |
 | Published Date | Official publication date on pub.dev |
@@ -108,7 +112,7 @@ The tool collects and stores the following information for each package:
 - **Database**: Persistent storage in `db/packages.sqlite`
 - **Console**: Real-time progress and status information
 - **Analysis Notebook**: Jupyter notebook provides comprehensive data analysis including:
-  - Version distribution analysis of analyzer dependencies
+  - Version distribution analysis of target package dependencies
   - Package freshness categorization (recently updated vs. older packages)
   - Visualization of dependency patterns and trends
   - Direct vs. indirect dependency identification
@@ -140,7 +144,7 @@ dart test
 
 Tests cover:
 - URL conversion utilities for different Git hosting providers
-- Analyzer version extraction from pubspec.yaml files
+- Target package version extraction from pubspec.yaml files
 - Database operations and data integrity
 - Service layer functionality
 
@@ -163,9 +167,9 @@ Key dependencies include:
 
 The included Jupyter notebook (`analyzer_version_analysis.ipynb`) provides comprehensive analysis capabilities:
 
-- **Version Distribution**: Categorizes packages by analyzer version ranges (< 7.0, 7.0-7.3, ≥ 7.4)
+- **Version Distribution**: Categorizes packages by target package version ranges (example: analyzer < 7.0, 7.0-7.3, ≥ 7.4)
 - **Package Freshness Analysis**: Distinguishes between recently updated packages vs. older packages
-- **Dependency Type Classification**: Identifies direct vs. indirect analyzer dependencies
+- **Dependency Type Classification**: Identifies direct vs. indirect dependencies on the target package
 - **Visualization**: Charts and graphs showing distribution patterns and trends
 
 To use the analysis notebook:

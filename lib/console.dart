@@ -178,41 +178,6 @@ PubspecInfo? extractPubspecInfo(dynamic pubspecData, String targetPackage) {
   }
 }
 
-/// Downloads pubspec.yaml from the repository URL and extracts the analyzer package version
-///
-/// Handles both GitHub and GitLab repositories by converting the repo URL to raw file URL.
-/// Searches for analyzer package in both dependencies and dev_dependencies sections.
-/// Attempts multiple strategies for finding the pubspec.yaml file.
-Future<PubspecInfo?> downloadAndExtractAnalyzerVersion(String repoUrl) async {
-  try {
-    final pubspecUrl = convertToPubspecRawUrl(repoUrl);
-    print('Downloading pubspec.yaml from: $pubspecUrl');
-
-    var response = await http.get(Uri.parse(pubspecUrl));
-
-    // If main branch fails and it's a GitHub repo, try master branch
-    if (response.statusCode == 404 && repoUrl.contains('github.com')) {
-      final masterUrl = pubspecUrl.replaceAll('/main/', '/master/');
-      if (masterUrl != pubspecUrl) {
-        print('Trying master branch: $masterUrl');
-        response = await http.get(Uri.parse(masterUrl));
-      }
-    }
-
-    if (response.statusCode == 200) {
-      final yamlContent = response.body;
-      return readPubspec(yamlContent);
-    } else {
-      print(
-        'Failed to download pubspec.yaml. Status code: ${response.statusCode}',
-      );
-    }
-  } catch (e) {
-    print('Error downloading or parsing pubspec.yaml: $e');
-  }
-  return null;
-}
-
 /// Converts repository URL to raw pubspec.yaml URL
 ///
 /// Supports GitHub and GitLab repositories by transforming the URL format
@@ -270,43 +235,6 @@ String convertToPubspecRawUrl(String repoUrl) {
   } else {
     // Fallback: assume it's a direct URL or try to append pubspec.yaml
     return '$cleanUrl/pubspec.yaml';
-  }
-}
-
-/// Extracts analyzer package version from YAML content
-///
-/// Parses the YAML and searches for analyzer package in both dependencies
-/// and dev_dependencies sections. Returns the version constraint if found.
-PubspecInfo? readPubspec(String yamlContent) {
-  try {
-    final dynamic yamlDoc = loadYaml(yamlContent);
-
-    if (yamlDoc is! Map) {
-      return null;
-    }
-
-    final yamlMap = yamlDoc;
-
-    // Check dependencies section
-    String? analyzerVersion;
-    final dependencies = yamlMap['dependencies'] as Map<dynamic, dynamic>?;
-    if (dependencies?.containsKey('analyzer') == true) {
-      analyzerVersion = dependencies!['analyzer'].toString();
-    }
-
-    // Check dev_dependencies section
-    if (analyzerVersion == null) {
-      final devDependencies =
-          yamlMap['dev_dependencies'] as Map<dynamic, dynamic>?;
-      if (devDependencies?.containsKey('analyzer') == true) {
-        analyzerVersion = devDependencies!['analyzer'].toString();
-      }
-    }
-    final version = yamlMap['version']?.toString() ?? 'unknown';
-    return PubspecInfo(version: version, targetPackageVersion: analyzerVersion);
-  } catch (e) {
-    print('Error parsing YAML: $e');
-    return null;
   }
 }
 
