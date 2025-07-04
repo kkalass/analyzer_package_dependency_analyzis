@@ -21,7 +21,7 @@ class SerializablePackage {
 class PackageData {
   final String packageName;
   final String targetPackage;
-  final String? devAnalyzerVersion;
+  final String? devTargetPackageVersion;
   final String? devVersion;
   final DateTime devDate;
   final DateTime? publishedDate;
@@ -36,7 +36,7 @@ class PackageData {
   PackageData({
     required this.packageName,
     required this.targetPackage,
-    required this.devAnalyzerVersion,
+    required this.devTargetPackageVersion,
     required this.devVersion,
     required this.devDate,
     required this.publishedDate,
@@ -68,7 +68,7 @@ Future<PackageData?> fetchPackageData(
   final info = await client.packageMetrics(packageName);
   var repoUrl = info?.scorecard.panaReport?.result?.repositoryUrl;
 
-  // Extract analyzer version and package version from latestPubspec
+  // Extract target package version and package version from latestPubspec
   final pubspecInfo = extractPubspecInfo(details.latestPubspec, targetPackage);
 
   // Extract additional metrics from the API response
@@ -84,7 +84,7 @@ Future<PackageData?> fetchPackageData(
   return PackageData(
     packageName: packageName,
     targetPackage: targetPackage,
-    devAnalyzerVersion: pubspecInfo?.targetPackageVersion,
+    devTargetPackageVersion: pubspecInfo?.targetPackageVersion,
     devVersion: pubspecInfo?.version,
     devDate: devDate,
     publishedDate: publishedDate,
@@ -335,7 +335,7 @@ Future<PackageData?> fetchAndStorePackageData(
       await packageDataService.storePackageData(
         packageName: packageData.packageName,
         targetPackage: packageData.targetPackage,
-        devAnalyzerVersion: packageData.devAnalyzerVersion,
+        devTargetPackageVersion: packageData.devTargetPackageVersion,
         devVersion: packageData.devVersion,
         devDate: packageData.devDate,
         publishedDate: packageData.publishedDate,
@@ -360,14 +360,17 @@ Future<PackageData?> fetchAndStorePackageData(
   }
 }
 
-/// Retrieves package data from database by package name
+/// Retrieves package data from database by package name and target package
 ///
 /// Provides a convenient way to access stored package data without
 /// needing to create a service instance.
-Future<PackageDataTableData?> getStoredPackageData(String packageName) async {
+Future<PackageDataTableData?> getStoredPackageData(
+  String packageName,
+  String targetPackage,
+) async {
   final service = PackageDataService.create();
   try {
-    return await service.getPackageData(packageName);
+    return await service.getPackageData(packageName, targetPackage);
   } finally {
     await service.close();
   }

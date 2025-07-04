@@ -31,12 +31,12 @@ class $PackageDataTableTable extends PackageDataTable
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _devAnalyzerVersionMeta =
-      const VerificationMeta('devAnalyzerVersion');
+  static const VerificationMeta _devTargetPackageVersionMeta =
+      const VerificationMeta('devTargetPackageVersion');
   @override
-  late final GeneratedColumn<String> devAnalyzerVersion =
+  late final GeneratedColumn<String> devTargetPackageVersion =
       GeneratedColumn<String>(
-        'dev_analyzer_version',
+        'dev_target_package_version',
         aliasedName,
         true,
         type: DriftSqlType.string,
@@ -180,7 +180,7 @@ class $PackageDataTableTable extends PackageDataTable
   List<GeneratedColumn> get $columns => [
     packageName,
     targetPackage,
-    devAnalyzerVersion,
+    devTargetPackageVersion,
     devVersion,
     devDate,
     publishedDate,
@@ -228,12 +228,12 @@ class $PackageDataTableTable extends PackageDataTable
     } else if (isInserting) {
       context.missing(_targetPackageMeta);
     }
-    if (data.containsKey('dev_analyzer_version')) {
+    if (data.containsKey('dev_target_package_version')) {
       context.handle(
-        _devAnalyzerVersionMeta,
-        devAnalyzerVersion.isAcceptableOrUnknown(
-          data['dev_analyzer_version']!,
-          _devAnalyzerVersionMeta,
+        _devTargetPackageVersionMeta,
+        devTargetPackageVersion.isAcceptableOrUnknown(
+          data['dev_target_package_version']!,
+          _devTargetPackageVersionMeta,
         ),
       );
     }
@@ -330,7 +330,7 @@ class $PackageDataTableTable extends PackageDataTable
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {packageName};
+  Set<GeneratedColumn> get $primaryKey => {packageName, targetPackage};
   @override
   PackageDataTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
@@ -345,9 +345,9 @@ class $PackageDataTableTable extends PackageDataTable
             DriftSqlType.string,
             data['${effectivePrefix}target_package'],
           )!,
-      devAnalyzerVersion: attachedDatabase.typeMapping.read(
+      devTargetPackageVersion: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}dev_analyzer_version'],
+        data['${effectivePrefix}dev_target_package_version'],
       ),
       devVersion: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -417,8 +417,8 @@ class PackageDataTableData extends DataClass
   /// The package we're analyzing dependencies for (e.g., 'analyzer')
   final String targetPackage;
 
-  /// Analyzer version from dev dependencies
-  final String? devAnalyzerVersion;
+  /// Target package version from dev dependencies
+  final String? devTargetPackageVersion;
 
   /// Version from pubspec.yaml
   final String? devVersion;
@@ -458,7 +458,7 @@ class PackageDataTableData extends DataClass
   const PackageDataTableData({
     required this.packageName,
     required this.targetPackage,
-    this.devAnalyzerVersion,
+    this.devTargetPackageVersion,
     this.devVersion,
     required this.devDate,
     this.publishedDate,
@@ -477,8 +477,10 @@ class PackageDataTableData extends DataClass
     final map = <String, Expression>{};
     map['package_name'] = Variable<String>(packageName);
     map['target_package'] = Variable<String>(targetPackage);
-    if (!nullToAbsent || devAnalyzerVersion != null) {
-      map['dev_analyzer_version'] = Variable<String>(devAnalyzerVersion);
+    if (!nullToAbsent || devTargetPackageVersion != null) {
+      map['dev_target_package_version'] = Variable<String>(
+        devTargetPackageVersion,
+      );
     }
     if (!nullToAbsent || devVersion != null) {
       map['dev_version'] = Variable<String>(devVersion);
@@ -517,10 +519,10 @@ class PackageDataTableData extends DataClass
     return PackageDataTableCompanion(
       packageName: Value(packageName),
       targetPackage: Value(targetPackage),
-      devAnalyzerVersion:
-          devAnalyzerVersion == null && nullToAbsent
+      devTargetPackageVersion:
+          devTargetPackageVersion == null && nullToAbsent
               ? const Value.absent()
-              : Value(devAnalyzerVersion),
+              : Value(devTargetPackageVersion),
       devVersion:
           devVersion == null && nullToAbsent
               ? const Value.absent()
@@ -571,8 +573,8 @@ class PackageDataTableData extends DataClass
     return PackageDataTableData(
       packageName: serializer.fromJson<String>(json['packageName']),
       targetPackage: serializer.fromJson<String>(json['targetPackage']),
-      devAnalyzerVersion: serializer.fromJson<String?>(
-        json['devAnalyzerVersion'],
+      devTargetPackageVersion: serializer.fromJson<String?>(
+        json['devTargetPackageVersion'],
       ),
       devVersion: serializer.fromJson<String?>(json['devVersion']),
       devDate: serializer.fromJson<DateTime>(json['devDate']),
@@ -596,7 +598,9 @@ class PackageDataTableData extends DataClass
     return <String, dynamic>{
       'packageName': serializer.toJson<String>(packageName),
       'targetPackage': serializer.toJson<String>(targetPackage),
-      'devAnalyzerVersion': serializer.toJson<String?>(devAnalyzerVersion),
+      'devTargetPackageVersion': serializer.toJson<String?>(
+        devTargetPackageVersion,
+      ),
       'devVersion': serializer.toJson<String?>(devVersion),
       'devDate': serializer.toJson<DateTime>(devDate),
       'publishedDate': serializer.toJson<DateTime?>(publishedDate),
@@ -615,7 +619,7 @@ class PackageDataTableData extends DataClass
   PackageDataTableData copyWith({
     String? packageName,
     String? targetPackage,
-    Value<String?> devAnalyzerVersion = const Value.absent(),
+    Value<String?> devTargetPackageVersion = const Value.absent(),
     Value<String?> devVersion = const Value.absent(),
     DateTime? devDate,
     Value<DateTime?> publishedDate = const Value.absent(),
@@ -631,10 +635,10 @@ class PackageDataTableData extends DataClass
   }) => PackageDataTableData(
     packageName: packageName ?? this.packageName,
     targetPackage: targetPackage ?? this.targetPackage,
-    devAnalyzerVersion:
-        devAnalyzerVersion.present
-            ? devAnalyzerVersion.value
-            : this.devAnalyzerVersion,
+    devTargetPackageVersion:
+        devTargetPackageVersion.present
+            ? devTargetPackageVersion.value
+            : this.devTargetPackageVersion,
     devVersion: devVersion.present ? devVersion.value : this.devVersion,
     devDate: devDate ?? this.devDate,
     publishedDate:
@@ -665,10 +669,10 @@ class PackageDataTableData extends DataClass
           data.targetPackage.present
               ? data.targetPackage.value
               : this.targetPackage,
-      devAnalyzerVersion:
-          data.devAnalyzerVersion.present
-              ? data.devAnalyzerVersion.value
-              : this.devAnalyzerVersion,
+      devTargetPackageVersion:
+          data.devTargetPackageVersion.present
+              ? data.devTargetPackageVersion.value
+              : this.devTargetPackageVersion,
       devVersion:
           data.devVersion.present ? data.devVersion.value : this.devVersion,
       devDate: data.devDate.present ? data.devDate.value : this.devDate,
@@ -705,7 +709,7 @@ class PackageDataTableData extends DataClass
     return (StringBuffer('PackageDataTableData(')
           ..write('packageName: $packageName, ')
           ..write('targetPackage: $targetPackage, ')
-          ..write('devAnalyzerVersion: $devAnalyzerVersion, ')
+          ..write('devTargetPackageVersion: $devTargetPackageVersion, ')
           ..write('devVersion: $devVersion, ')
           ..write('devDate: $devDate, ')
           ..write('publishedDate: $publishedDate, ')
@@ -726,7 +730,7 @@ class PackageDataTableData extends DataClass
   int get hashCode => Object.hash(
     packageName,
     targetPackage,
-    devAnalyzerVersion,
+    devTargetPackageVersion,
     devVersion,
     devDate,
     publishedDate,
@@ -746,7 +750,7 @@ class PackageDataTableData extends DataClass
       (other is PackageDataTableData &&
           other.packageName == this.packageName &&
           other.targetPackage == this.targetPackage &&
-          other.devAnalyzerVersion == this.devAnalyzerVersion &&
+          other.devTargetPackageVersion == this.devTargetPackageVersion &&
           other.devVersion == this.devVersion &&
           other.devDate == this.devDate &&
           other.publishedDate == this.publishedDate &&
@@ -764,7 +768,7 @@ class PackageDataTableData extends DataClass
 class PackageDataTableCompanion extends UpdateCompanion<PackageDataTableData> {
   final Value<String> packageName;
   final Value<String> targetPackage;
-  final Value<String?> devAnalyzerVersion;
+  final Value<String?> devTargetPackageVersion;
   final Value<String?> devVersion;
   final Value<DateTime> devDate;
   final Value<DateTime?> publishedDate;
@@ -781,7 +785,7 @@ class PackageDataTableCompanion extends UpdateCompanion<PackageDataTableData> {
   const PackageDataTableCompanion({
     this.packageName = const Value.absent(),
     this.targetPackage = const Value.absent(),
-    this.devAnalyzerVersion = const Value.absent(),
+    this.devTargetPackageVersion = const Value.absent(),
     this.devVersion = const Value.absent(),
     this.devDate = const Value.absent(),
     this.publishedDate = const Value.absent(),
@@ -799,7 +803,7 @@ class PackageDataTableCompanion extends UpdateCompanion<PackageDataTableData> {
   PackageDataTableCompanion.insert({
     required String packageName,
     required String targetPackage,
-    this.devAnalyzerVersion = const Value.absent(),
+    this.devTargetPackageVersion = const Value.absent(),
     this.devVersion = const Value.absent(),
     required DateTime devDate,
     this.publishedDate = const Value.absent(),
@@ -819,7 +823,7 @@ class PackageDataTableCompanion extends UpdateCompanion<PackageDataTableData> {
   static Insertable<PackageDataTableData> custom({
     Expression<String>? packageName,
     Expression<String>? targetPackage,
-    Expression<String>? devAnalyzerVersion,
+    Expression<String>? devTargetPackageVersion,
     Expression<String>? devVersion,
     Expression<DateTime>? devDate,
     Expression<DateTime>? publishedDate,
@@ -837,8 +841,8 @@ class PackageDataTableCompanion extends UpdateCompanion<PackageDataTableData> {
     return RawValuesInsertable({
       if (packageName != null) 'package_name': packageName,
       if (targetPackage != null) 'target_package': targetPackage,
-      if (devAnalyzerVersion != null)
-        'dev_analyzer_version': devAnalyzerVersion,
+      if (devTargetPackageVersion != null)
+        'dev_target_package_version': devTargetPackageVersion,
       if (devVersion != null) 'dev_version': devVersion,
       if (devDate != null) 'dev_date': devDate,
       if (publishedDate != null) 'published_date': publishedDate,
@@ -859,7 +863,7 @@ class PackageDataTableCompanion extends UpdateCompanion<PackageDataTableData> {
   PackageDataTableCompanion copyWith({
     Value<String>? packageName,
     Value<String>? targetPackage,
-    Value<String?>? devAnalyzerVersion,
+    Value<String?>? devTargetPackageVersion,
     Value<String?>? devVersion,
     Value<DateTime>? devDate,
     Value<DateTime?>? publishedDate,
@@ -877,7 +881,8 @@ class PackageDataTableCompanion extends UpdateCompanion<PackageDataTableData> {
     return PackageDataTableCompanion(
       packageName: packageName ?? this.packageName,
       targetPackage: targetPackage ?? this.targetPackage,
-      devAnalyzerVersion: devAnalyzerVersion ?? this.devAnalyzerVersion,
+      devTargetPackageVersion:
+          devTargetPackageVersion ?? this.devTargetPackageVersion,
       devVersion: devVersion ?? this.devVersion,
       devDate: devDate ?? this.devDate,
       publishedDate: publishedDate ?? this.publishedDate,
@@ -903,8 +908,10 @@ class PackageDataTableCompanion extends UpdateCompanion<PackageDataTableData> {
     if (targetPackage.present) {
       map['target_package'] = Variable<String>(targetPackage.value);
     }
-    if (devAnalyzerVersion.present) {
-      map['dev_analyzer_version'] = Variable<String>(devAnalyzerVersion.value);
+    if (devTargetPackageVersion.present) {
+      map['dev_target_package_version'] = Variable<String>(
+        devTargetPackageVersion.value,
+      );
     }
     if (devVersion.present) {
       map['dev_version'] = Variable<String>(devVersion.value);
@@ -953,7 +960,7 @@ class PackageDataTableCompanion extends UpdateCompanion<PackageDataTableData> {
     return (StringBuffer('PackageDataTableCompanion(')
           ..write('packageName: $packageName, ')
           ..write('targetPackage: $targetPackage, ')
-          ..write('devAnalyzerVersion: $devAnalyzerVersion, ')
+          ..write('devTargetPackageVersion: $devTargetPackageVersion, ')
           ..write('devVersion: $devVersion, ')
           ..write('devDate: $devDate, ')
           ..write('publishedDate: $publishedDate, ')
@@ -1742,7 +1749,7 @@ typedef $$PackageDataTableTableCreateCompanionBuilder =
     PackageDataTableCompanion Function({
       required String packageName,
       required String targetPackage,
-      Value<String?> devAnalyzerVersion,
+      Value<String?> devTargetPackageVersion,
       Value<String?> devVersion,
       required DateTime devDate,
       Value<DateTime?> publishedDate,
@@ -1761,7 +1768,7 @@ typedef $$PackageDataTableTableUpdateCompanionBuilder =
     PackageDataTableCompanion Function({
       Value<String> packageName,
       Value<String> targetPackage,
-      Value<String?> devAnalyzerVersion,
+      Value<String?> devTargetPackageVersion,
       Value<String?> devVersion,
       Value<DateTime> devDate,
       Value<DateTime?> publishedDate,
@@ -1796,8 +1803,8 @@ class $$PackageDataTableTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get devAnalyzerVersion => $composableBuilder(
-    column: $table.devAnalyzerVersion,
+  ColumnFilters<String> get devTargetPackageVersion => $composableBuilder(
+    column: $table.devTargetPackageVersion,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1881,8 +1888,8 @@ class $$PackageDataTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get devAnalyzerVersion => $composableBuilder(
-    column: $table.devAnalyzerVersion,
+  ColumnOrderings<String> get devTargetPackageVersion => $composableBuilder(
+    column: $table.devTargetPackageVersion,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -1966,8 +1973,8 @@ class $$PackageDataTableTableAnnotationComposer
     builder: (column) => column,
   );
 
-  GeneratedColumn<String> get devAnalyzerVersion => $composableBuilder(
-    column: $table.devAnalyzerVersion,
+  GeneratedColumn<String> get devTargetPackageVersion => $composableBuilder(
+    column: $table.devTargetPackageVersion,
     builder: (column) => column,
   );
 
@@ -2066,7 +2073,7 @@ class $$PackageDataTableTableTableManager
               ({
                 Value<String> packageName = const Value.absent(),
                 Value<String> targetPackage = const Value.absent(),
-                Value<String?> devAnalyzerVersion = const Value.absent(),
+                Value<String?> devTargetPackageVersion = const Value.absent(),
                 Value<String?> devVersion = const Value.absent(),
                 Value<DateTime> devDate = const Value.absent(),
                 Value<DateTime?> publishedDate = const Value.absent(),
@@ -2083,7 +2090,7 @@ class $$PackageDataTableTableTableManager
               }) => PackageDataTableCompanion(
                 packageName: packageName,
                 targetPackage: targetPackage,
-                devAnalyzerVersion: devAnalyzerVersion,
+                devTargetPackageVersion: devTargetPackageVersion,
                 devVersion: devVersion,
                 devDate: devDate,
                 publishedDate: publishedDate,
@@ -2102,7 +2109,7 @@ class $$PackageDataTableTableTableManager
               ({
                 required String packageName,
                 required String targetPackage,
-                Value<String?> devAnalyzerVersion = const Value.absent(),
+                Value<String?> devTargetPackageVersion = const Value.absent(),
                 Value<String?> devVersion = const Value.absent(),
                 required DateTime devDate,
                 Value<DateTime?> publishedDate = const Value.absent(),
@@ -2119,7 +2126,7 @@ class $$PackageDataTableTableTableManager
               }) => PackageDataTableCompanion.insert(
                 packageName: packageName,
                 targetPackage: targetPackage,
-                devAnalyzerVersion: devAnalyzerVersion,
+                devTargetPackageVersion: devTargetPackageVersion,
                 devVersion: devVersion,
                 devDate: devDate,
                 publishedDate: publishedDate,

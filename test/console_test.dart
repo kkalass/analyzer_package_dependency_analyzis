@@ -42,8 +42,8 @@ void main() {
     });
   });
 
-  group('Analyzer version extraction tests', () {
-    test('extracts analyzer version from dependencies section', () {
+  group('Target package version extraction tests', () {
+    test('extracts target package version from dependencies section', () {
       const yamlContent = '''
 name: example_package
 dependencies:
@@ -59,7 +59,7 @@ dev_dependencies:
       expect(result!.targetPackageVersion, equals('^6.2.0'));
     });
 
-    test('extracts analyzer version from dev_dependencies section', () {
+    test('extracts target package version from dev_dependencies section', () {
       const yamlContent = '''
 name: example_package
 dependencies:
@@ -126,7 +126,7 @@ dev_dependencies:
       expect(result, isNull);
     });
 
-    test('handles analyzer version as number', () {
+    test('handles target package version as number', () {
       const yamlContent = '''
 name: example_package
 version: 1.2.3
@@ -143,7 +143,7 @@ dependencies:
   });
 
   group('PubspecInfo extraction tests', () {
-    test('extracts analyzer version from Map-based pubspec data', () {
+    test('extracts target package version from Map-based pubspec data', () {
       final pubspecData = {
         'name': 'example_package',
         'version': '1.0.0',
@@ -157,7 +157,7 @@ dependencies:
       expect(result.targetPackageVersion, equals('^6.2.0'));
     });
 
-    test('extracts analyzer version from dev_dependencies section', () {
+    test('extracts target package version from dev_dependencies section', () {
       final pubspecData = {
         'name': 'example_package',
         'version': '1.0.0',

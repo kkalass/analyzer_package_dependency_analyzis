@@ -13,7 +13,7 @@ void main() {
         final packageData = PackageData(
           packageName: packageName,
           targetPackage: 'analyzer',
-          devAnalyzerVersion: '^7.0.0',
+          devTargetPackageVersion: '^7.0.0',
           devVersion: '2.0.0',
           devDate: DateTime.now(),
           publishedDate: DateTime.now().subtract(const Duration(days: 1)),
@@ -33,7 +33,7 @@ void main() {
           await service.storePackageData(
             packageName: packageData.packageName,
             targetPackage: packageData.targetPackage,
-            devAnalyzerVersion: packageData.devAnalyzerVersion,
+            devTargetPackageVersion: packageData.devTargetPackageVersion,
             devVersion: packageData.devVersion,
             devDate: packageData.devDate,
             publishedDate: packageData.publishedDate,
@@ -47,25 +47,25 @@ void main() {
           );
 
           // Retrieve data using convenience function
-          final retrieved = await getStoredPackageData(packageName);
+          final retrieved = await getStoredPackageData(packageName, 'analyzer');
 
           expect(retrieved, isNotNull);
           expect(retrieved!.packageName, equals(packageName));
-          expect(retrieved.devAnalyzerVersion, equals('^7.0.0'));
+          expect(retrieved.devTargetPackageVersion, equals('^7.0.0'));
           expect(retrieved.devVersion, equals('2.0.0'));
           expect(retrieved.publishedVersion, equals('1.9.0'));
           expect(retrieved.repoUrl, equals('https://github.com/test/repo'));
 
           // Test existence check
-          final exists = await service.hasPackageData(packageName);
+          final exists = await service.hasPackageData(packageName, 'analyzer');
           expect(exists, isTrue);
 
           // Test deletion
-          final deleteCount = await service.deletePackageData(packageName);
+          final deleteCount = await service.deletePackageData(packageName, 'analyzer');
           expect(deleteCount, equals(1));
 
           // Verify deletion
-          final afterDeletion = await service.hasPackageData(packageName);
+          final afterDeletion = await service.hasPackageData(packageName, 'analyzer');
           expect(afterDeletion, isFalse);
         } finally {
           await service.close();
@@ -85,7 +85,7 @@ void main() {
           await service.storePackageData(
             packageName: packages[i],
             targetPackage: 'analyzer',
-            devAnalyzerVersion: '^${i + 6}.0.0',
+            devTargetPackageVersion: '^${i + 6}.0.0',
             devVersion: '1.$i.0',
             devDate: now.add(Duration(minutes: i)),
             publishedVersion: '1.$i.0',
@@ -102,7 +102,7 @@ void main() {
 
         // Clean up test data
         for (final pkg in packages) {
-          await service.deletePackageData(pkg);
+          await service.deletePackageData(pkg, 'analyzer');
         }
       } finally {
         await service.close();
@@ -118,27 +118,27 @@ void main() {
         await service.storePackageData(
           packageName: packageName,
           targetPackage: 'analyzer',
-          devAnalyzerVersion: '^6.0.0',
+          devTargetPackageVersion: '^6.0.0',
           devVersion: '1.0.0',
           devDate: DateTime.now(),
         );
 
-        final initial = await service.getPackageData(packageName);
+        final initial = await service.getPackageData(packageName, 'analyzer');
         expect(initial, isNotNull);
-        expect(initial!.devAnalyzerVersion, equals('^6.0.0'));
+        expect(initial!.devTargetPackageVersion, equals('^6.0.0'));
 
         // Update the same package
         await service.storePackageData(
           packageName: packageName,
           targetPackage: 'analyzer',
-          devAnalyzerVersion: '^7.0.0',
+          devTargetPackageVersion: '^7.0.0',
           devVersion: '2.0.0',
           devDate: DateTime.now(),
         );
 
-        final updated = await service.getPackageData(packageName);
+        final updated = await service.getPackageData(packageName, 'analyzer');
         expect(updated, isNotNull);
-        expect(updated!.devAnalyzerVersion, equals('^7.0.0'));
+        expect(updated!.devTargetPackageVersion, equals('^7.0.0'));
         expect(updated.devVersion, equals('2.0.0'));
 
         // The created and updated timestamps should be different
@@ -149,7 +149,7 @@ void main() {
         );
 
         // Clean up
-        await service.deletePackageData(packageName);
+        await service.deletePackageData(packageName, 'analyzer');
       } finally {
         await service.close();
       }

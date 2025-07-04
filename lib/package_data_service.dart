@@ -7,12 +7,25 @@ import 'package:drift/drift.dart';
 /// while abstracting away the database implementation details.
 class PackageDataService {
   final PackageDatabase _database;
+  static PackageDatabase? _sharedDatabase;
+  static int _referenceCount = 0;
 
   PackageDataService(this._database);
 
-  /// Factory constructor that creates a service with a default database instance
+  /// Factory constructor that creates a service with a shared database instance
   factory PackageDataService.create() {
-    return PackageDataService(PackageDatabase());
+    _sharedDatabase ??= PackageDatabase();
+    _referenceCount++;
+    return PackageDataService(_sharedDatabase!);
+  }
+
+  /// Closes the shared database instance when no more references exist
+  static Future<void> closeSharedDatabase() async {
+    if (_sharedDatabase != null) {
+      await _sharedDatabase!.close();
+      _sharedDatabase = null;
+      _referenceCount = 0;
+    }
   }
 
   /// Stores package data in the database
@@ -22,7 +35,7 @@ class PackageDataService {
   Future<void> storePackageData({
     required String packageName,
     required String targetPackage,
-    String? devAnalyzerVersion,
+    String? devTargetPackageVersion,
     String? devVersion,
     required DateTime devDate,
     DateTime? publishedDate,
@@ -37,7 +50,7 @@ class PackageDataService {
     final companion = PackageDataTableCompanion(
       packageName: Value(packageName),
       targetPackage: Value(targetPackage),
-      devAnalyzerVersion: Value(devAnalyzerVersion),
+      devTargetPackageVersion: Value(devTargetPackageVersion),
       devVersion: Value(devVersion),
       devDate: Value(devDate),
       publishedDate: Value(publishedDate),
@@ -54,11 +67,14 @@ class PackageDataService {
     await _database.upsertPackageData(companion);
   }
 
-  /// Retrieves package data by package name
+  /// Retrieves package data by package name and target package
   ///
-  /// Returns null if no data is found for the given package name.
-  Future<PackageDataTableData?> getPackageData(String packageName) async {
-    return await _database.getPackageData(packageName);
+  /// Returns null if no data is found for the given package name and target package combination.
+  Future<PackageDataTableData?> getPackageData(
+    String packageName,
+    String targetPackage,
+  ) async {
+    return await _database.getPackageData(packageName, targetPackage);
   }
 
   /// Retrieves all stored package data
@@ -77,22 +93,31 @@ class PackageDataService {
     return await _database.getAllPackageDataForTarget(targetPackage);
   }
 
-  /// Deletes package data by package name
+  /// Deletes package data by package name and target package
   ///
   /// Returns the number of rows affected (0 if package not found, 1 if deleted).
-  Future<int> deletePackageData(String packageName) async {
-    return await _database.deletePackageData(packageName);
+  Future<int> deletePackageData(
+    String packageName,
+    String targetPackage,
+  ) async {
+    return await _database.deletePackageData(packageName, targetPackage);
   }
 
-  /// Checks if package data exists for the given package name
-  Future<bool> hasPackageData(String packageName) async {
-    final data = await getPackageData(packageName);
+  /// Checks if package data exists for the given package name and target package
+  Future<bool> hasPackageData(
+    String packageName,
+    String targetPackage,
+  ) async {
+    final data = await getPackageData(packageName, targetPackage);
     return data != null;
   }
 
   /// Updates the last accessed timestamp for a package
-  Future<void> touchPackageData(String packageName) async {
-    await _database.touchPackageData(packageName);
+  Future<void> touchPackageData(
+    String packageName,
+    String targetPackage,
+  ) async {
+    await _database.touchPackageData(packageName, targetPackage);
   }
 
   /// Saves the search state for resuming interrupted operations
@@ -191,9 +216,12 @@ class PackageDataService {
 
   /// Closes the database connection
   ///
-  /// Should be called when the service is no longer needed
-  /// to properly release database resources.
+  /// Uses reference counting to only close the shared database when no more
+  /// service instances need it.
   Future<void> close() async {
-    await _database.close();
+    _referenceCount--;
+    if (_referenceCount <= 0) {
+      await closeSharedDatabase();
+    }
   }
 }

@@ -207,7 +207,7 @@ Future<void> performFetch(String targetPackage) async {
       );
 
       // Check if we already have this package stored
-      final existingData = await service.getPackageData(package.package);
+      final existingData = await service.getPackageData(package.package, targetPackage);
 
       if (existingData != null) {
         alreadyStoredCount++;
@@ -226,7 +226,7 @@ Future<void> performFetch(String targetPackage) async {
             newlyFetchedCount++;
             print('  ✓ Stored: ${package.package}');
             print(
-              '    Analyzer version: ${packageData.devAnalyzerVersion ?? 'Not found'}',
+              '    Target package version: ${packageData.devTargetPackageVersion ?? 'Not found'}',
             );
             print('    Repository: ${packageData.repoUrl ?? 'Not found'}');
           } else {
@@ -266,7 +266,7 @@ Future<void> performFetch(String targetPackage) async {
     for (int i = 0; i < sampleSize; i++) {
       final pkg = allStored[i];
       print('${i + 1}. ${pkg.packageName}');
-      print('   Analyzer: ${pkg.devAnalyzerVersion ?? 'N/A'}');
+      print('   Target package: ${pkg.devTargetPackageVersion ?? 'N/A'}');
       print('   Updated: ${pkg.updatedAt}');
     }
 
@@ -322,7 +322,7 @@ Future<void> listStoredPackages(String? targetPackage) async {
       print('${i + 1}. ${pkg.packageName}');
       print('   Target package: ${pkg.targetPackage}');
       print(
-        '   Target package version: ${pkg.devAnalyzerVersion ?? 'Not found'}',
+        '   Target package version: ${pkg.devTargetPackageVersion ?? 'Not found'}',
       );
       print('   Dev version: ${pkg.devVersion ?? 'N/A'}');
       print('   Published version: ${pkg.publishedVersion ?? 'N/A'}');
@@ -333,7 +333,7 @@ Future<void> listStoredPackages(String? targetPackage) async {
 
     // Summary statistics
     final withTargetPackage =
-        allStored.where((p) => p.devAnalyzerVersion != null).length;
+        allStored.where((p) => p.devTargetPackageVersion != null).length;
     final withRepo = allStored.where((p) => p.repoUrl != null).length;
 
     print('--- Statistics ---');
@@ -397,7 +397,7 @@ Future<void> exportToCSV(String? targetPackage) async {
       final row = [
         _escapeCsvField(pkg.packageName),
         _escapeCsvField(pkg.targetPackage),
-        _escapeCsvField(pkg.devAnalyzerVersion ?? ''),
+        _escapeCsvField(pkg.devTargetPackageVersion ?? ''),
         _escapeCsvField(pkg.devVersion ?? ''),
         _escapeCsvField(pkg.devDate.toIso8601String()),
         _escapeCsvField(pkg.publishedDate?.toIso8601String() ?? ''),
@@ -419,7 +419,7 @@ Future<void> exportToCSV(String? targetPackage) async {
 
     // Show summary statistics
     final withTargetPackage =
-        allStored.where((p) => p.devAnalyzerVersion != null).length;
+        allStored.where((p) => p.devTargetPackageVersion != null).length;
     final withRepo = allStored.where((p) => p.repoUrl != null).length;
 
     print('');

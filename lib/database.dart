@@ -62,8 +62,8 @@ class PackageDataTable extends Table {
   /// The package we're analyzing dependencies for (e.g., 'analyzer')
   TextColumn get targetPackage => text()();
 
-  /// Analyzer version from dev dependencies
-  TextColumn get devAnalyzerVersion => text().nullable()();
+  /// Target package version from dev dependencies
+  TextColumn get devTargetPackageVersion => text().nullable()();
 
   /// Version from pubspec.yaml
   TextColumn get devVersion => text().nullable()();
@@ -102,7 +102,7 @@ class PackageDataTable extends Table {
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 
   @override
-  Set<Column> get primaryKey => {packageName};
+  Set<Column> get primaryKey => {packageName, targetPackage};
 }
 
 /// Database class that extends GeneratedDatabase
@@ -111,7 +111,7 @@ class PackageDatabase extends _$PackageDatabase {
   PackageDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -139,6 +139,16 @@ class PackageDatabase extends _$PackageDatabase {
         await m.createTable(packageDataTable);
         await m.createTable(packageSearchStateTable);
       }
+      if (from < 6) {
+        // Rename devAnalyzerVersion column to devTargetPackageVersion
+        await m.drop(packageDataTable);
+        await m.createTable(packageDataTable);
+      }
+      if (from < 7) {
+        // Change primary key to composite (packageName, targetPackage)
+        await m.drop(packageDataTable);
+        await m.createTable(packageDataTable);
+      }
     },
   );
 
@@ -147,10 +157,16 @@ class PackageDatabase extends _$PackageDatabase {
     await into(packageDataTable).insertOnConflictUpdate(data);
   }
 
-  /// Retrieves package data by package name
-  Future<PackageDataTableData?> getPackageData(String packageName) async {
+  /// Retrieves package data by package name and target package
+  Future<PackageDataTableData?> getPackageData(
+    String packageName,
+    String targetPackage,
+  ) async {
     return (select(packageDataTable)
-      ..where((tbl) => tbl.packageName.equals(packageName))).getSingleOrNull();
+          ..where((tbl) =>
+              tbl.packageName.equals(packageName) &
+              tbl.targetPackage.equals(targetPackage)))
+        .getSingleOrNull();
   }
 
   /// Retrieves all package data ordered by creation date
@@ -169,17 +185,28 @@ class PackageDatabase extends _$PackageDatabase {
         .get();
   }
 
-  /// Deletes package data by package name
-  Future<int> deletePackageData(String packageName) async {
+  /// Deletes package data by package name and target package
+  Future<int> deletePackageData(
+    String packageName,
+    String targetPackage,
+  ) async {
     return (delete(packageDataTable)
-      ..where((tbl) => tbl.packageName.equals(packageName))).go();
+          ..where((tbl) =>
+              tbl.packageName.equals(packageName) &
+              tbl.targetPackage.equals(targetPackage)))
+        .go();
   }
 
   /// Updates the updatedAt timestamp for a package
-  Future<void> touchPackageData(String packageName) async {
-    await (update(packageDataTable)..where(
-      (tbl) => tbl.packageName.equals(packageName),
-    )).write(PackageDataTableCompanion(updatedAt: Value(DateTime.now())));
+  Future<void> touchPackageData(
+    String packageName,
+    String targetPackage,
+  ) async {
+    await (update(packageDataTable)
+          ..where((tbl) =>
+              tbl.packageName.equals(packageName) &
+              tbl.targetPackage.equals(targetPackage)))
+        .write(PackageDataTableCompanion(updatedAt: Value(DateTime.now())));
   }
 
   /// Saves or updates the package search state (legacy method for compatibility)
