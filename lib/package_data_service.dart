@@ -104,10 +104,7 @@ class PackageDataService {
   }
 
   /// Checks if package data exists for the given package name and target package
-  Future<bool> hasPackageData(
-    String packageName,
-    String targetPackage,
-  ) async {
+  Future<bool> hasPackageData(String packageName, String targetPackage) async {
     final data = await getPackageData(packageName, targetPackage);
     return data != null;
   }
@@ -123,6 +120,7 @@ class PackageDataService {
   /// Saves the search state for resuming interrupted operations
   Future<void> saveSearchState({
     required String searchId,
+    required String targetPackage,
     required String allPackagesJson,
     required int currentIndex,
     required int totalCount,
@@ -131,6 +129,7 @@ class PackageDataService {
   }) async {
     await _database.saveSearchState(
       searchId: searchId,
+      targetPackage: targetPackage,
       allPackagesJson: allPackagesJson,
       currentIndex: currentIndex,
       totalCount: totalCount,
@@ -190,6 +189,7 @@ class PackageDataService {
   /// Saves pagination progress during package discovery
   Future<void> savePaginationProgress({
     required String searchId,
+    required String targetPackage,
     required String allPackagesJson,
     String? nextPageUrl,
     required int currentPage,
@@ -197,6 +197,7 @@ class PackageDataService {
   }) async {
     await _database.savePaginationProgress(
       searchId: searchId,
+      targetPackage: targetPackage,
       allPackagesJson: allPackagesJson,
       nextPageUrl: nextPageUrl,
       currentPage: currentPage,

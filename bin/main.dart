@@ -527,6 +527,7 @@ Future<List<PackageResult>> fetchAllPackagesWithPagination(
         await _savePaginationProgress(
           service,
           searchId,
+          targetPackage,
           allPackages,
           currentResults.next,
           pageCount,
@@ -556,6 +557,7 @@ Future<List<PackageResult>> fetchAllPackagesWithPagination(
     await _savePaginationProgress(
       service,
       searchId,
+      targetPackage,
       allPackages,
       currentResults.next,
       pageCount,
@@ -578,6 +580,7 @@ Future<List<PackageResult>> fetchAllPackagesWithPagination(
       await _savePaginationProgress(
         service,
         searchId,
+        targetPackage,
         allPackages,
         currentResults.next,
         pageCount,
@@ -612,6 +615,7 @@ Future<List<PackageResult>> fetchAllPackagesWithPagination(
 Future<void> _savePaginationProgress(
   PackageDataService service,
   String searchId,
+  String targetPackage,
   List<PackageResult> allPackages,
   String? nextUrl,
   int currentPage,
@@ -628,6 +632,7 @@ Future<void> _savePaginationProgress(
     // Create new state
     await service.savePaginationProgress(
       searchId: searchId,
+      targetPackage: targetPackage,
       allPackagesJson: jsonEncode(packagesJson),
       nextPageUrl: nextUrl,
       currentPage: currentPage,

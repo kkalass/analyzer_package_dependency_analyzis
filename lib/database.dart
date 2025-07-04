@@ -162,11 +162,11 @@ class PackageDatabase extends _$PackageDatabase {
     String packageName,
     String targetPackage,
   ) async {
-    return (select(packageDataTable)
-          ..where((tbl) =>
-              tbl.packageName.equals(packageName) &
-              tbl.targetPackage.equals(targetPackage)))
-        .getSingleOrNull();
+    return (select(packageDataTable)..where(
+      (tbl) =>
+          tbl.packageName.equals(packageName) &
+          tbl.targetPackage.equals(targetPackage),
+    )).getSingleOrNull();
   }
 
   /// Retrieves all package data ordered by creation date
@@ -190,11 +190,11 @@ class PackageDatabase extends _$PackageDatabase {
     String packageName,
     String targetPackage,
   ) async {
-    return (delete(packageDataTable)
-          ..where((tbl) =>
-              tbl.packageName.equals(packageName) &
-              tbl.targetPackage.equals(targetPackage)))
-        .go();
+    return (delete(packageDataTable)..where(
+      (tbl) =>
+          tbl.packageName.equals(packageName) &
+          tbl.targetPackage.equals(targetPackage),
+    )).go();
   }
 
   /// Updates the updatedAt timestamp for a package
@@ -202,16 +202,17 @@ class PackageDatabase extends _$PackageDatabase {
     String packageName,
     String targetPackage,
   ) async {
-    await (update(packageDataTable)
-          ..where((tbl) =>
-              tbl.packageName.equals(packageName) &
-              tbl.targetPackage.equals(targetPackage)))
-        .write(PackageDataTableCompanion(updatedAt: Value(DateTime.now())));
+    await (update(packageDataTable)..where(
+      (tbl) =>
+          tbl.packageName.equals(packageName) &
+          tbl.targetPackage.equals(targetPackage),
+    )).write(PackageDataTableCompanion(updatedAt: Value(DateTime.now())));
   }
 
   /// Saves or updates the package search state (legacy method for compatibility)
   Future<void> saveSearchState({
     required String searchId,
+    required String targetPackage,
     required String allPackagesJson,
     required int currentIndex,
     required int totalCount,
@@ -221,6 +222,7 @@ class PackageDatabase extends _$PackageDatabase {
     await into(packageSearchStateTable).insertOnConflictUpdate(
       PackageSearchStateTableCompanion(
         searchId: Value(searchId),
+        targetPackage: Value(targetPackage),
         allPackagesJson: Value(allPackagesJson),
         currentIndex: Value(currentIndex),
         totalCount: Value(totalCount),
@@ -311,6 +313,7 @@ class PackageDatabase extends _$PackageDatabase {
   /// Saves pagination progress during package discovery
   Future<void> savePaginationProgress({
     required String searchId,
+    required String targetPackage,
     required String allPackagesJson,
     String? nextPageUrl,
     required int currentPage,
@@ -319,6 +322,7 @@ class PackageDatabase extends _$PackageDatabase {
     await into(packageSearchStateTable).insertOnConflictUpdate(
       PackageSearchStateTableCompanion(
         searchId: Value(searchId),
+        targetPackage: Value(targetPackage),
         allPackagesJson: Value(allPackagesJson),
         nextPageUrl: Value(nextPageUrl),
         currentPage: Value(currentPage),
