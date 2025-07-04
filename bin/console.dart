@@ -244,11 +244,6 @@ Future<void> performFetch() async {
     if (allStored.length > sampleSize) {
       print('   ... and ${allStored.length - sampleSize} more packages');
     }
-
-    // Optionally clear the search state after successful completion
-    print('\nClearing search state...');
-    await service.clearSearchState(searchId);
-    print('✓ Search state cleared');
   } catch (e) {
     print('Error during fetch operation: $e');
     print('Search state has been preserved for resumption.');
