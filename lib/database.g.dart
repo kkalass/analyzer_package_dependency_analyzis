@@ -20,6 +20,17 @@ class $PackageDataTableTable extends PackageDataTable
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _targetPackageMeta = const VerificationMeta(
+    'targetPackage',
+  );
+  @override
+  late final GeneratedColumn<String> targetPackage = GeneratedColumn<String>(
+    'target_package',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _devAnalyzerVersionMeta =
       const VerificationMeta('devAnalyzerVersion');
   @override
@@ -168,6 +179,7 @@ class $PackageDataTableTable extends PackageDataTable
   @override
   List<GeneratedColumn> get $columns => [
     packageName,
+    targetPackage,
     devAnalyzerVersion,
     devVersion,
     devDate,
@@ -204,6 +216,17 @@ class $PackageDataTableTable extends PackageDataTable
       );
     } else if (isInserting) {
       context.missing(_packageNameMeta);
+    }
+    if (data.containsKey('target_package')) {
+      context.handle(
+        _targetPackageMeta,
+        targetPackage.isAcceptableOrUnknown(
+          data['target_package']!,
+          _targetPackageMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_targetPackageMeta);
     }
     if (data.containsKey('dev_analyzer_version')) {
       context.handle(
@@ -317,6 +340,11 @@ class $PackageDataTableTable extends PackageDataTable
             DriftSqlType.string,
             data['${effectivePrefix}package_name'],
           )!,
+      targetPackage:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}target_package'],
+          )!,
       devAnalyzerVersion: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}dev_analyzer_version'],
@@ -386,6 +414,9 @@ class PackageDataTableData extends DataClass
   /// Primary key - package name
   final String packageName;
 
+  /// The package we're analyzing dependencies for (e.g., 'analyzer')
+  final String targetPackage;
+
   /// Analyzer version from dev dependencies
   final String? devAnalyzerVersion;
 
@@ -426,6 +457,7 @@ class PackageDataTableData extends DataClass
   final DateTime updatedAt;
   const PackageDataTableData({
     required this.packageName,
+    required this.targetPackage,
     this.devAnalyzerVersion,
     this.devVersion,
     required this.devDate,
@@ -444,6 +476,7 @@ class PackageDataTableData extends DataClass
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['package_name'] = Variable<String>(packageName);
+    map['target_package'] = Variable<String>(targetPackage);
     if (!nullToAbsent || devAnalyzerVersion != null) {
       map['dev_analyzer_version'] = Variable<String>(devAnalyzerVersion);
     }
@@ -483,6 +516,7 @@ class PackageDataTableData extends DataClass
   PackageDataTableCompanion toCompanion(bool nullToAbsent) {
     return PackageDataTableCompanion(
       packageName: Value(packageName),
+      targetPackage: Value(targetPackage),
       devAnalyzerVersion:
           devAnalyzerVersion == null && nullToAbsent
               ? const Value.absent()
@@ -536,6 +570,7 @@ class PackageDataTableData extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return PackageDataTableData(
       packageName: serializer.fromJson<String>(json['packageName']),
+      targetPackage: serializer.fromJson<String>(json['targetPackage']),
       devAnalyzerVersion: serializer.fromJson<String?>(
         json['devAnalyzerVersion'],
       ),
@@ -560,6 +595,7 @@ class PackageDataTableData extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'packageName': serializer.toJson<String>(packageName),
+      'targetPackage': serializer.toJson<String>(targetPackage),
       'devAnalyzerVersion': serializer.toJson<String?>(devAnalyzerVersion),
       'devVersion': serializer.toJson<String?>(devVersion),
       'devDate': serializer.toJson<DateTime>(devDate),
@@ -578,6 +614,7 @@ class PackageDataTableData extends DataClass
 
   PackageDataTableData copyWith({
     String? packageName,
+    String? targetPackage,
     Value<String?> devAnalyzerVersion = const Value.absent(),
     Value<String?> devVersion = const Value.absent(),
     DateTime? devDate,
@@ -593,6 +630,7 @@ class PackageDataTableData extends DataClass
     DateTime? updatedAt,
   }) => PackageDataTableData(
     packageName: packageName ?? this.packageName,
+    targetPackage: targetPackage ?? this.targetPackage,
     devAnalyzerVersion:
         devAnalyzerVersion.present
             ? devAnalyzerVersion.value
@@ -623,6 +661,10 @@ class PackageDataTableData extends DataClass
     return PackageDataTableData(
       packageName:
           data.packageName.present ? data.packageName.value : this.packageName,
+      targetPackage:
+          data.targetPackage.present
+              ? data.targetPackage.value
+              : this.targetPackage,
       devAnalyzerVersion:
           data.devAnalyzerVersion.present
               ? data.devAnalyzerVersion.value
@@ -662,6 +704,7 @@ class PackageDataTableData extends DataClass
   String toString() {
     return (StringBuffer('PackageDataTableData(')
           ..write('packageName: $packageName, ')
+          ..write('targetPackage: $targetPackage, ')
           ..write('devAnalyzerVersion: $devAnalyzerVersion, ')
           ..write('devVersion: $devVersion, ')
           ..write('devDate: $devDate, ')
@@ -682,6 +725,7 @@ class PackageDataTableData extends DataClass
   @override
   int get hashCode => Object.hash(
     packageName,
+    targetPackage,
     devAnalyzerVersion,
     devVersion,
     devDate,
@@ -701,6 +745,7 @@ class PackageDataTableData extends DataClass
       identical(this, other) ||
       (other is PackageDataTableData &&
           other.packageName == this.packageName &&
+          other.targetPackage == this.targetPackage &&
           other.devAnalyzerVersion == this.devAnalyzerVersion &&
           other.devVersion == this.devVersion &&
           other.devDate == this.devDate &&
@@ -718,6 +763,7 @@ class PackageDataTableData extends DataClass
 
 class PackageDataTableCompanion extends UpdateCompanion<PackageDataTableData> {
   final Value<String> packageName;
+  final Value<String> targetPackage;
   final Value<String?> devAnalyzerVersion;
   final Value<String?> devVersion;
   final Value<DateTime> devDate;
@@ -734,6 +780,7 @@ class PackageDataTableCompanion extends UpdateCompanion<PackageDataTableData> {
   final Value<int> rowid;
   const PackageDataTableCompanion({
     this.packageName = const Value.absent(),
+    this.targetPackage = const Value.absent(),
     this.devAnalyzerVersion = const Value.absent(),
     this.devVersion = const Value.absent(),
     this.devDate = const Value.absent(),
@@ -751,6 +798,7 @@ class PackageDataTableCompanion extends UpdateCompanion<PackageDataTableData> {
   });
   PackageDataTableCompanion.insert({
     required String packageName,
+    required String targetPackage,
     this.devAnalyzerVersion = const Value.absent(),
     this.devVersion = const Value.absent(),
     required DateTime devDate,
@@ -766,9 +814,11 @@ class PackageDataTableCompanion extends UpdateCompanion<PackageDataTableData> {
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : packageName = Value(packageName),
+       targetPackage = Value(targetPackage),
        devDate = Value(devDate);
   static Insertable<PackageDataTableData> custom({
     Expression<String>? packageName,
+    Expression<String>? targetPackage,
     Expression<String>? devAnalyzerVersion,
     Expression<String>? devVersion,
     Expression<DateTime>? devDate,
@@ -786,6 +836,7 @@ class PackageDataTableCompanion extends UpdateCompanion<PackageDataTableData> {
   }) {
     return RawValuesInsertable({
       if (packageName != null) 'package_name': packageName,
+      if (targetPackage != null) 'target_package': targetPackage,
       if (devAnalyzerVersion != null)
         'dev_analyzer_version': devAnalyzerVersion,
       if (devVersion != null) 'dev_version': devVersion,
@@ -807,6 +858,7 @@ class PackageDataTableCompanion extends UpdateCompanion<PackageDataTableData> {
 
   PackageDataTableCompanion copyWith({
     Value<String>? packageName,
+    Value<String>? targetPackage,
     Value<String?>? devAnalyzerVersion,
     Value<String?>? devVersion,
     Value<DateTime>? devDate,
@@ -824,6 +876,7 @@ class PackageDataTableCompanion extends UpdateCompanion<PackageDataTableData> {
   }) {
     return PackageDataTableCompanion(
       packageName: packageName ?? this.packageName,
+      targetPackage: targetPackage ?? this.targetPackage,
       devAnalyzerVersion: devAnalyzerVersion ?? this.devAnalyzerVersion,
       devVersion: devVersion ?? this.devVersion,
       devDate: devDate ?? this.devDate,
@@ -846,6 +899,9 @@ class PackageDataTableCompanion extends UpdateCompanion<PackageDataTableData> {
     final map = <String, Expression>{};
     if (packageName.present) {
       map['package_name'] = Variable<String>(packageName.value);
+    }
+    if (targetPackage.present) {
+      map['target_package'] = Variable<String>(targetPackage.value);
     }
     if (devAnalyzerVersion.present) {
       map['dev_analyzer_version'] = Variable<String>(devAnalyzerVersion.value);
@@ -896,6 +952,7 @@ class PackageDataTableCompanion extends UpdateCompanion<PackageDataTableData> {
   String toString() {
     return (StringBuffer('PackageDataTableCompanion(')
           ..write('packageName: $packageName, ')
+          ..write('targetPackage: $targetPackage, ')
           ..write('devAnalyzerVersion: $devAnalyzerVersion, ')
           ..write('devVersion: $devVersion, ')
           ..write('devDate: $devDate, ')
@@ -927,6 +984,17 @@ class $PackageSearchStateTableTable extends PackageSearchStateTable
   @override
   late final GeneratedColumn<String> searchId = GeneratedColumn<String>(
     'search_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _targetPackageMeta = const VerificationMeta(
+    'targetPackage',
+  );
+  @override
+  late final GeneratedColumn<String> targetPackage = GeneratedColumn<String>(
+    'target_package',
     aliasedName,
     false,
     type: DriftSqlType.string,
@@ -1044,6 +1112,7 @@ class $PackageSearchStateTableTable extends PackageSearchStateTable
   @override
   List<GeneratedColumn> get $columns => [
     searchId,
+    targetPackage,
     allPackagesJson,
     nextPageUrl,
     currentPage,
@@ -1073,6 +1142,17 @@ class $PackageSearchStateTableTable extends PackageSearchStateTable
       );
     } else if (isInserting) {
       context.missing(_searchIdMeta);
+    }
+    if (data.containsKey('target_package')) {
+      context.handle(
+        _targetPackageMeta,
+        targetPackage.isAcceptableOrUnknown(
+          data['target_package']!,
+          _targetPackageMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_targetPackageMeta);
     }
     if (data.containsKey('all_packages_json')) {
       context.handle(
@@ -1175,6 +1255,11 @@ class $PackageSearchStateTableTable extends PackageSearchStateTable
             DriftSqlType.string,
             data['${effectivePrefix}search_id'],
           )!,
+      targetPackage:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}target_package'],
+          )!,
       allPackagesJson:
           attachedDatabase.typeMapping.read(
             DriftSqlType.string,
@@ -1230,8 +1315,11 @@ class $PackageSearchStateTableTable extends PackageSearchStateTable
 
 class PackageSearchStateTableData extends DataClass
     implements Insertable<PackageSearchStateTableData> {
-  /// Primary key - search identifier (always 'analyzer_dependency')
+  /// Primary key - search identifier (e.g., 'analyzer_dependency')
   final String searchId;
+
+  /// The package we're analyzing dependencies for (e.g., 'analyzer')
+  final String targetPackage;
 
   /// JSON encoded list of all discovered packages so far
   final String allPackagesJson;
@@ -1261,6 +1349,7 @@ class PackageSearchStateTableData extends DataClass
   final DateTime lastUpdated;
   const PackageSearchStateTableData({
     required this.searchId,
+    required this.targetPackage,
     required this.allPackagesJson,
     this.nextPageUrl,
     required this.currentPage,
@@ -1275,6 +1364,7 @@ class PackageSearchStateTableData extends DataClass
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['search_id'] = Variable<String>(searchId);
+    map['target_package'] = Variable<String>(targetPackage);
     map['all_packages_json'] = Variable<String>(allPackagesJson);
     if (!nullToAbsent || nextPageUrl != null) {
       map['next_page_url'] = Variable<String>(nextPageUrl);
@@ -1292,6 +1382,7 @@ class PackageSearchStateTableData extends DataClass
   PackageSearchStateTableCompanion toCompanion(bool nullToAbsent) {
     return PackageSearchStateTableCompanion(
       searchId: Value(searchId),
+      targetPackage: Value(targetPackage),
       allPackagesJson: Value(allPackagesJson),
       nextPageUrl:
           nextPageUrl == null && nullToAbsent
@@ -1314,6 +1405,7 @@ class PackageSearchStateTableData extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return PackageSearchStateTableData(
       searchId: serializer.fromJson<String>(json['searchId']),
+      targetPackage: serializer.fromJson<String>(json['targetPackage']),
       allPackagesJson: serializer.fromJson<String>(json['allPackagesJson']),
       nextPageUrl: serializer.fromJson<String?>(json['nextPageUrl']),
       currentPage: serializer.fromJson<int>(json['currentPage']),
@@ -1332,6 +1424,7 @@ class PackageSearchStateTableData extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'searchId': serializer.toJson<String>(searchId),
+      'targetPackage': serializer.toJson<String>(targetPackage),
       'allPackagesJson': serializer.toJson<String>(allPackagesJson),
       'nextPageUrl': serializer.toJson<String?>(nextPageUrl),
       'currentPage': serializer.toJson<int>(currentPage),
@@ -1346,6 +1439,7 @@ class PackageSearchStateTableData extends DataClass
 
   PackageSearchStateTableData copyWith({
     String? searchId,
+    String? targetPackage,
     String? allPackagesJson,
     Value<String?> nextPageUrl = const Value.absent(),
     int? currentPage,
@@ -1357,6 +1451,7 @@ class PackageSearchStateTableData extends DataClass
     DateTime? lastUpdated,
   }) => PackageSearchStateTableData(
     searchId: searchId ?? this.searchId,
+    targetPackage: targetPackage ?? this.targetPackage,
     allPackagesJson: allPackagesJson ?? this.allPackagesJson,
     nextPageUrl: nextPageUrl.present ? nextPageUrl.value : this.nextPageUrl,
     currentPage: currentPage ?? this.currentPage,
@@ -1372,6 +1467,10 @@ class PackageSearchStateTableData extends DataClass
   ) {
     return PackageSearchStateTableData(
       searchId: data.searchId.present ? data.searchId.value : this.searchId,
+      targetPackage:
+          data.targetPackage.present
+              ? data.targetPackage.value
+              : this.targetPackage,
       allPackagesJson:
           data.allPackagesJson.present
               ? data.allPackagesJson.value
@@ -1407,6 +1506,7 @@ class PackageSearchStateTableData extends DataClass
   String toString() {
     return (StringBuffer('PackageSearchStateTableData(')
           ..write('searchId: $searchId, ')
+          ..write('targetPackage: $targetPackage, ')
           ..write('allPackagesJson: $allPackagesJson, ')
           ..write('nextPageUrl: $nextPageUrl, ')
           ..write('currentPage: $currentPage, ')
@@ -1423,6 +1523,7 @@ class PackageSearchStateTableData extends DataClass
   @override
   int get hashCode => Object.hash(
     searchId,
+    targetPackage,
     allPackagesJson,
     nextPageUrl,
     currentPage,
@@ -1438,6 +1539,7 @@ class PackageSearchStateTableData extends DataClass
       identical(this, other) ||
       (other is PackageSearchStateTableData &&
           other.searchId == this.searchId &&
+          other.targetPackage == this.targetPackage &&
           other.allPackagesJson == this.allPackagesJson &&
           other.nextPageUrl == this.nextPageUrl &&
           other.currentPage == this.currentPage &&
@@ -1452,6 +1554,7 @@ class PackageSearchStateTableData extends DataClass
 class PackageSearchStateTableCompanion
     extends UpdateCompanion<PackageSearchStateTableData> {
   final Value<String> searchId;
+  final Value<String> targetPackage;
   final Value<String> allPackagesJson;
   final Value<String?> nextPageUrl;
   final Value<int> currentPage;
@@ -1464,6 +1567,7 @@ class PackageSearchStateTableCompanion
   final Value<int> rowid;
   const PackageSearchStateTableCompanion({
     this.searchId = const Value.absent(),
+    this.targetPackage = const Value.absent(),
     this.allPackagesJson = const Value.absent(),
     this.nextPageUrl = const Value.absent(),
     this.currentPage = const Value.absent(),
@@ -1477,6 +1581,7 @@ class PackageSearchStateTableCompanion
   });
   PackageSearchStateTableCompanion.insert({
     required String searchId,
+    required String targetPackage,
     required String allPackagesJson,
     this.nextPageUrl = const Value.absent(),
     this.currentPage = const Value.absent(),
@@ -1488,11 +1593,13 @@ class PackageSearchStateTableCompanion
     this.lastUpdated = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : searchId = Value(searchId),
+       targetPackage = Value(targetPackage),
        allPackagesJson = Value(allPackagesJson),
        totalCount = Value(totalCount),
        searchStarted = Value(searchStarted);
   static Insertable<PackageSearchStateTableData> custom({
     Expression<String>? searchId,
+    Expression<String>? targetPackage,
     Expression<String>? allPackagesJson,
     Expression<String>? nextPageUrl,
     Expression<int>? currentPage,
@@ -1506,6 +1613,7 @@ class PackageSearchStateTableCompanion
   }) {
     return RawValuesInsertable({
       if (searchId != null) 'search_id': searchId,
+      if (targetPackage != null) 'target_package': targetPackage,
       if (allPackagesJson != null) 'all_packages_json': allPackagesJson,
       if (nextPageUrl != null) 'next_page_url': nextPageUrl,
       if (currentPage != null) 'current_page': currentPage,
@@ -1522,6 +1630,7 @@ class PackageSearchStateTableCompanion
 
   PackageSearchStateTableCompanion copyWith({
     Value<String>? searchId,
+    Value<String>? targetPackage,
     Value<String>? allPackagesJson,
     Value<String?>? nextPageUrl,
     Value<int>? currentPage,
@@ -1535,6 +1644,7 @@ class PackageSearchStateTableCompanion
   }) {
     return PackageSearchStateTableCompanion(
       searchId: searchId ?? this.searchId,
+      targetPackage: targetPackage ?? this.targetPackage,
       allPackagesJson: allPackagesJson ?? this.allPackagesJson,
       nextPageUrl: nextPageUrl ?? this.nextPageUrl,
       currentPage: currentPage ?? this.currentPage,
@@ -1553,6 +1663,9 @@ class PackageSearchStateTableCompanion
     final map = <String, Expression>{};
     if (searchId.present) {
       map['search_id'] = Variable<String>(searchId.value);
+    }
+    if (targetPackage.present) {
+      map['target_package'] = Variable<String>(targetPackage.value);
     }
     if (allPackagesJson.present) {
       map['all_packages_json'] = Variable<String>(allPackagesJson.value);
@@ -1591,6 +1704,7 @@ class PackageSearchStateTableCompanion
   String toString() {
     return (StringBuffer('PackageSearchStateTableCompanion(')
           ..write('searchId: $searchId, ')
+          ..write('targetPackage: $targetPackage, ')
           ..write('allPackagesJson: $allPackagesJson, ')
           ..write('nextPageUrl: $nextPageUrl, ')
           ..write('currentPage: $currentPage, ')
@@ -1627,6 +1741,7 @@ abstract class _$PackageDatabase extends GeneratedDatabase {
 typedef $$PackageDataTableTableCreateCompanionBuilder =
     PackageDataTableCompanion Function({
       required String packageName,
+      required String targetPackage,
       Value<String?> devAnalyzerVersion,
       Value<String?> devVersion,
       required DateTime devDate,
@@ -1645,6 +1760,7 @@ typedef $$PackageDataTableTableCreateCompanionBuilder =
 typedef $$PackageDataTableTableUpdateCompanionBuilder =
     PackageDataTableCompanion Function({
       Value<String> packageName,
+      Value<String> targetPackage,
       Value<String?> devAnalyzerVersion,
       Value<String?> devVersion,
       Value<DateTime> devDate,
@@ -1672,6 +1788,11 @@ class $$PackageDataTableTableFilterComposer
   });
   ColumnFilters<String> get packageName => $composableBuilder(
     column: $table.packageName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get targetPackage => $composableBuilder(
+    column: $table.targetPackage,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1755,6 +1876,11 @@ class $$PackageDataTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get targetPackage => $composableBuilder(
+    column: $table.targetPackage,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get devAnalyzerVersion => $composableBuilder(
     column: $table.devAnalyzerVersion,
     builder: (column) => ColumnOrderings(column),
@@ -1832,6 +1958,11 @@ class $$PackageDataTableTableAnnotationComposer
   });
   GeneratedColumn<String> get packageName => $composableBuilder(
     column: $table.packageName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get targetPackage => $composableBuilder(
+    column: $table.targetPackage,
     builder: (column) => column,
   );
 
@@ -1934,6 +2065,7 @@ class $$PackageDataTableTableTableManager
           updateCompanionCallback:
               ({
                 Value<String> packageName = const Value.absent(),
+                Value<String> targetPackage = const Value.absent(),
                 Value<String?> devAnalyzerVersion = const Value.absent(),
                 Value<String?> devVersion = const Value.absent(),
                 Value<DateTime> devDate = const Value.absent(),
@@ -1950,6 +2082,7 @@ class $$PackageDataTableTableTableManager
                 Value<int> rowid = const Value.absent(),
               }) => PackageDataTableCompanion(
                 packageName: packageName,
+                targetPackage: targetPackage,
                 devAnalyzerVersion: devAnalyzerVersion,
                 devVersion: devVersion,
                 devDate: devDate,
@@ -1968,6 +2101,7 @@ class $$PackageDataTableTableTableManager
           createCompanionCallback:
               ({
                 required String packageName,
+                required String targetPackage,
                 Value<String?> devAnalyzerVersion = const Value.absent(),
                 Value<String?> devVersion = const Value.absent(),
                 required DateTime devDate,
@@ -1984,6 +2118,7 @@ class $$PackageDataTableTableTableManager
                 Value<int> rowid = const Value.absent(),
               }) => PackageDataTableCompanion.insert(
                 packageName: packageName,
+                targetPackage: targetPackage,
                 devAnalyzerVersion: devAnalyzerVersion,
                 devVersion: devVersion,
                 devDate: devDate,
@@ -2038,6 +2173,7 @@ typedef $$PackageDataTableTableProcessedTableManager =
 typedef $$PackageSearchStateTableTableCreateCompanionBuilder =
     PackageSearchStateTableCompanion Function({
       required String searchId,
+      required String targetPackage,
       required String allPackagesJson,
       Value<String?> nextPageUrl,
       Value<int> currentPage,
@@ -2052,6 +2188,7 @@ typedef $$PackageSearchStateTableTableCreateCompanionBuilder =
 typedef $$PackageSearchStateTableTableUpdateCompanionBuilder =
     PackageSearchStateTableCompanion Function({
       Value<String> searchId,
+      Value<String> targetPackage,
       Value<String> allPackagesJson,
       Value<String?> nextPageUrl,
       Value<int> currentPage,
@@ -2075,6 +2212,11 @@ class $$PackageSearchStateTableTableFilterComposer
   });
   ColumnFilters<String> get searchId => $composableBuilder(
     column: $table.searchId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get targetPackage => $composableBuilder(
+    column: $table.targetPackage,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2138,6 +2280,11 @@ class $$PackageSearchStateTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get targetPackage => $composableBuilder(
+    column: $table.targetPackage,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get allPackagesJson => $composableBuilder(
     column: $table.allPackagesJson,
     builder: (column) => ColumnOrderings(column),
@@ -2195,6 +2342,11 @@ class $$PackageSearchStateTableTableAnnotationComposer
   });
   GeneratedColumn<String> get searchId =>
       $composableBuilder(column: $table.searchId, builder: (column) => column);
+
+  GeneratedColumn<String> get targetPackage => $composableBuilder(
+    column: $table.targetPackage,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<String> get allPackagesJson => $composableBuilder(
     column: $table.allPackagesJson,
@@ -2289,6 +2441,7 @@ class $$PackageSearchStateTableTableTableManager
           updateCompanionCallback:
               ({
                 Value<String> searchId = const Value.absent(),
+                Value<String> targetPackage = const Value.absent(),
                 Value<String> allPackagesJson = const Value.absent(),
                 Value<String?> nextPageUrl = const Value.absent(),
                 Value<int> currentPage = const Value.absent(),
@@ -2301,6 +2454,7 @@ class $$PackageSearchStateTableTableTableManager
                 Value<int> rowid = const Value.absent(),
               }) => PackageSearchStateTableCompanion(
                 searchId: searchId,
+                targetPackage: targetPackage,
                 allPackagesJson: allPackagesJson,
                 nextPageUrl: nextPageUrl,
                 currentPage: currentPage,
@@ -2315,6 +2469,7 @@ class $$PackageSearchStateTableTableTableManager
           createCompanionCallback:
               ({
                 required String searchId,
+                required String targetPackage,
                 required String allPackagesJson,
                 Value<String?> nextPageUrl = const Value.absent(),
                 Value<int> currentPage = const Value.absent(),
@@ -2327,6 +2482,7 @@ class $$PackageSearchStateTableTableTableManager
                 Value<int> rowid = const Value.absent(),
               }) => PackageSearchStateTableCompanion.insert(
                 searchId: searchId,
+                targetPackage: targetPackage,
                 allPackagesJson: allPackagesJson,
                 nextPageUrl: nextPageUrl,
                 currentPage: currentPage,

@@ -11,8 +11,11 @@ class PackageSearchStateTable extends Table {
   @override
   String get tableName => 'package_search_state';
 
-  /// Primary key - search identifier (always 'analyzer_dependency')
+  /// Primary key - search identifier (e.g., 'analyzer_dependency')
   TextColumn get searchId => text()();
+
+  /// The package we're analyzing dependencies for (e.g., 'analyzer')
+  TextColumn get targetPackage => text()();
 
   /// JSON encoded list of all discovered packages so far
   TextColumn get allPackagesJson => text()();
@@ -55,6 +58,9 @@ class PackageDataTable extends Table {
 
   /// Primary key - package name
   TextColumn get packageName => text()();
+
+  /// The package we're analyzing dependencies for (e.g., 'analyzer')
+  TextColumn get targetPackage => text()();
 
   /// Analyzer version from dev dependencies
   TextColumn get devAnalyzerVersion => text().nullable()();
@@ -105,7 +111,7 @@ class PackageDatabase extends _$PackageDatabase {
   PackageDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -126,6 +132,13 @@ class PackageDatabase extends _$PackageDatabase {
         await m.drop(packageDataTable);
         await m.createTable(packageDataTable);
       }
+      if (from < 5) {
+        // Recreate both tables to add targetPackage field and update primary keys
+        await m.drop(packageDataTable);
+        await m.drop(packageSearchStateTable);
+        await m.createTable(packageDataTable);
+        await m.createTable(packageSearchStateTable);
+      }
     },
   );
 
@@ -144,6 +157,16 @@ class PackageDatabase extends _$PackageDatabase {
   Future<List<PackageDataTableData>> getAllPackageData() async {
     return (select(packageDataTable)
       ..orderBy([(tbl) => OrderingTerm.desc(tbl.createdAt)])).get();
+  }
+
+  /// Retrieves all package data for a specific target package
+  Future<List<PackageDataTableData>> getAllPackageDataForTarget(
+    String targetPackage,
+  ) async {
+    return (select(packageDataTable)
+          ..where((tbl) => tbl.targetPackage.equals(targetPackage))
+          ..orderBy([(tbl) => OrderingTerm.desc(tbl.createdAt)]))
+        .get();
   }
 
   /// Deletes package data by package name

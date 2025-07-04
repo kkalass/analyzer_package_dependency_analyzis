@@ -20,6 +20,7 @@ class SerializablePackage {
 
 class PackageData {
   final String packageName;
+  final String targetPackage;
   final String? devAnalyzerVersion;
   final String? devVersion;
   final DateTime devDate;
@@ -34,6 +35,7 @@ class PackageData {
 
   PackageData({
     required this.packageName,
+    required this.targetPackage,
     required this.devAnalyzerVersion,
     required this.devVersion,
     required this.devDate,
@@ -50,14 +52,15 @@ class PackageData {
 
 class PubspecInfo {
   final String version;
-  final String? analyzerVersion;
+  final String? targetPackageVersion;
 
-  PubspecInfo({required this.version, this.analyzerVersion});
+  PubspecInfo({required this.version, this.targetPackageVersion});
 }
 
 Future<PackageData?> fetchPackageData(
   PubClient client,
   String packageName,
+  String targetPackage,
 ) async {
   final details = await client.packageInfo(packageName);
   final publishedDate = details.latest.published;
@@ -66,7 +69,7 @@ Future<PackageData?> fetchPackageData(
   var repoUrl = info?.scorecard.panaReport?.result?.repositoryUrl;
 
   // Extract analyzer version and package version from latestPubspec
-  final pubspecInfo = extractPubspecInfo(details.latestPubspec);
+  final pubspecInfo = extractPubspecInfo(details.latestPubspec, targetPackage);
 
   // Extract additional metrics from the API response
   final downloadCount30Days = info?.score.downloadCount30Days;
@@ -80,7 +83,8 @@ Future<PackageData?> fetchPackageData(
 
   return PackageData(
     packageName: packageName,
-    devAnalyzerVersion: pubspecInfo?.analyzerVersion,
+    targetPackage: targetPackage,
+    devAnalyzerVersion: pubspecInfo?.targetPackageVersion,
     devVersion: pubspecInfo?.version,
     devDate: devDate,
     publishedDate: publishedDate,
@@ -94,11 +98,11 @@ Future<PackageData?> fetchPackageData(
   );
 }
 
-/// Extracts analyzer version and package version from pubspec data
+/// Extracts target package version and package version from pubspec data
 ///
 /// Parses the pubspec data from the pub.dev API response to extract
-/// the analyzer package version from dependencies or dev_dependencies.
-PubspecInfo? extractPubspecInfo(dynamic pubspecData) {
+/// the target package version from dependencies or dev_dependencies.
+PubspecInfo? extractPubspecInfo(dynamic pubspecData, String targetPackage) {
   if (pubspecData == null) return null;
 
   try {
@@ -114,54 +118,60 @@ PubspecInfo? extractPubspecInfo(dynamic pubspecData) {
       final version = pubspecData.version?.toString() ?? 'unknown';
 
       // Try to access dependencies
-      String? analyzerVersion;
+      String? targetPackageVersion;
       try {
         final dependencies = pubspecData.dependencies;
-        if (dependencies != null && dependencies.containsKey('analyzer')) {
-          analyzerVersion = dependencies['analyzer'].toString();
+        if (dependencies != null && dependencies.containsKey(targetPackage)) {
+          targetPackageVersion = dependencies[targetPackage].toString();
         }
       } catch (e) {
         // Ignore error and try dev_dependencies
       }
 
       // Try dev_dependencies if not found in dependencies
-      if (analyzerVersion == null) {
+      if (targetPackageVersion == null) {
         try {
           final devDependencies = pubspecData.devDependencies;
           if (devDependencies != null &&
-              devDependencies.containsKey('analyzer')) {
-            analyzerVersion = devDependencies['analyzer'].toString();
+              devDependencies.containsKey(targetPackage)) {
+            targetPackageVersion = devDependencies[targetPackage].toString();
           }
         } catch (e) {
           // Ignore error
         }
       }
 
-      return PubspecInfo(version: version, analyzerVersion: analyzerVersion);
+      return PubspecInfo(
+        version: version,
+        targetPackageVersion: targetPackageVersion,
+      );
     }
 
     if (pubspecMap == null) return null;
 
-    // Check dependencies section for analyzer
-    String? analyzerVersion;
+    // Check dependencies section for target package
+    String? targetPackageVersion;
     final dependencies = pubspecMap['dependencies'] as Map<String, dynamic>?;
-    if (dependencies?.containsKey('analyzer') == true) {
-      analyzerVersion = dependencies!['analyzer'].toString();
+    if (dependencies?.containsKey(targetPackage) == true) {
+      targetPackageVersion = dependencies![targetPackage].toString();
     }
 
     // Check dev_dependencies section if not found in dependencies
-    if (analyzerVersion == null) {
+    if (targetPackageVersion == null) {
       final devDependencies =
           pubspecMap['dev_dependencies'] as Map<String, dynamic>?;
-      if (devDependencies?.containsKey('analyzer') == true) {
-        analyzerVersion = devDependencies!['analyzer'].toString();
+      if (devDependencies?.containsKey(targetPackage) == true) {
+        targetPackageVersion = devDependencies![targetPackage].toString();
       }
     }
 
     // Extract version from pubspec
     final version = pubspecMap['version']?.toString() ?? 'unknown';
 
-    return PubspecInfo(version: version, analyzerVersion: analyzerVersion);
+    return PubspecInfo(
+      version: version,
+      targetPackageVersion: targetPackageVersion,
+    );
   } catch (e) {
     print('Error parsing pubspec data: $e');
     return null;
@@ -293,7 +303,7 @@ PubspecInfo? readPubspec(String yamlContent) {
       }
     }
     final version = yamlMap['version']?.toString() ?? 'unknown';
-    return PubspecInfo(version: version, analyzerVersion: analyzerVersion);
+    return PubspecInfo(version: version, targetPackageVersion: analyzerVersion);
   } catch (e) {
     print('Error parsing YAML: $e');
     return null;
@@ -306,19 +316,25 @@ PubspecInfo? readPubspec(String yamlContent) {
 /// it in the local database for persistence and caching.
 Future<PackageData?> fetchAndStorePackageData(
   client,
-  String packageName, {
+  String packageName,
+  String targetPackage, {
   PackageDataService? service,
 }) async {
   final packageDataService = service ?? PackageDataService.create();
 
   try {
     // Fetch the package data
-    final packageData = await fetchPackageData(client, packageName);
+    final packageData = await fetchPackageData(
+      client,
+      packageName,
+      targetPackage,
+    );
 
     if (packageData != null) {
       // Store the data in the database
       await packageDataService.storePackageData(
         packageName: packageData.packageName,
+        targetPackage: packageData.targetPackage,
         devAnalyzerVersion: packageData.devAnalyzerVersion,
         devVersion: packageData.devVersion,
         devDate: packageData.devDate,
@@ -364,6 +380,20 @@ Future<List<PackageDataTableData>> listAllStoredPackages() async {
   final service = PackageDataService.create();
   try {
     return await service.getAllPackageData();
+  } finally {
+    await service.close();
+  }
+}
+
+/// Lists all stored package data for a specific target package
+///
+/// Returns all package data entries for the given target package.
+Future<List<PackageDataTableData>> listAllStoredPackagesForTarget(
+  String targetPackage,
+) async {
+  final service = PackageDataService.create();
+  try {
+    return await service.getAllPackageDataForTarget(targetPackage);
   } finally {
     await service.close();
   }

@@ -56,7 +56,7 @@ dev_dependencies:
       final result = readPubspec(yamlContent);
 
       expect(result, isNotNull);
-      expect(result!.analyzerVersion, equals('^6.2.0'));
+      expect(result!.targetPackageVersion, equals('^6.2.0'));
     });
 
     test('extracts analyzer version from dev_dependencies section', () {
@@ -72,7 +72,7 @@ dev_dependencies:
       final result = readPubspec(yamlContent);
 
       expect(result, isNotNull);
-      expect(result!.analyzerVersion, equals('^7.4.5'));
+      expect(result!.targetPackageVersion, equals('^7.4.5'));
     });
 
     test(
@@ -91,7 +91,7 @@ dev_dependencies:
         final result = readPubspec(yamlContent);
 
         expect(result, isNotNull);
-        expect(result!.analyzerVersion, equals('^6.0.0'));
+        expect(result!.targetPackageVersion, equals('^6.0.0'));
       },
     );
 
@@ -107,7 +107,7 @@ dev_dependencies:
       final result = readPubspec(yamlContent);
 
       expect(result, isNotNull);
-      expect(result!.analyzerVersion, isNull);
+      expect(result!.targetPackageVersion, isNull);
     });
 
     test('returns null for invalid YAML content', () {
@@ -137,7 +137,7 @@ dependencies:
       final result = readPubspec(yamlContent);
 
       expect(result, isNotNull);
-      expect(result!.analyzerVersion, equals('6.2.0'));
+      expect(result!.targetPackageVersion, equals('6.2.0'));
       expect(result.version, equals('1.2.3'));
     });
   });
@@ -150,11 +150,11 @@ dependencies:
         'dependencies': {'analyzer': '^6.2.0'},
       };
 
-      final result = extractPubspecInfo(pubspecData);
+      final result = extractPubspecInfo(pubspecData, 'analyzer');
 
       expect(result, isNotNull);
       expect(result!.version, equals('1.0.0'));
-      expect(result.analyzerVersion, equals('^6.2.0'));
+      expect(result.targetPackageVersion, equals('^6.2.0'));
     });
 
     test('extracts analyzer version from dev_dependencies section', () {
@@ -164,11 +164,11 @@ dependencies:
         'dev_dependencies': {'analyzer': '^6.2.0'},
       };
 
-      final result = extractPubspecInfo(pubspecData);
+      final result = extractPubspecInfo(pubspecData, 'analyzer');
 
       expect(result, isNotNull);
       expect(result!.version, equals('1.0.0'));
-      expect(result.analyzerVersion, equals('^6.2.0'));
+      expect(result.targetPackageVersion, equals('^6.2.0'));
     });
 
     test('returns null when no analyzer dependency is found', () {
@@ -178,25 +178,25 @@ dependencies:
         'dependencies': {'http': '^0.13.0'},
       };
 
-      final result = extractPubspecInfo(pubspecData);
+      final result = extractPubspecInfo(pubspecData, 'analyzer');
 
       expect(result, isNotNull);
       expect(result!.version, equals('1.0.0'));
-      expect(result.analyzerVersion, isNull);
+      expect(result.targetPackageVersion, isNull);
     });
 
     test('handles null pubspec data gracefully', () {
-      final result = extractPubspecInfo(null);
+      final result = extractPubspecInfo(null, 'analyzer');
 
       expect(result, isNull);
     });
 
     test('handles empty pubspec data gracefully', () {
-      final result = extractPubspecInfo({});
+      final result = extractPubspecInfo({}, 'analyzer');
 
       expect(result, isNotNull);
       expect(result!.version, equals('unknown'));
-      expect(result.analyzerVersion, isNull);
+      expect(result.targetPackageVersion, isNull);
     });
   });
 }

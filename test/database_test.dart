@@ -12,6 +12,7 @@ void main() {
         // Create a mock PackageData object
         final packageData = PackageData(
           packageName: packageName,
+          targetPackage: 'analyzer',
           devAnalyzerVersion: '^7.0.0',
           devVersion: '2.0.0',
           devDate: DateTime.now(),
@@ -31,6 +32,7 @@ void main() {
         try {
           await service.storePackageData(
             packageName: packageData.packageName,
+            targetPackage: packageData.targetPackage,
             devAnalyzerVersion: packageData.devAnalyzerVersion,
             devVersion: packageData.devVersion,
             devDate: packageData.devDate,
@@ -82,6 +84,7 @@ void main() {
         for (int i = 0; i < packages.length; i++) {
           await service.storePackageData(
             packageName: packages[i],
+            targetPackage: 'analyzer',
             devAnalyzerVersion: '^${i + 6}.0.0',
             devVersion: '1.$i.0',
             devDate: now.add(Duration(minutes: i)),
@@ -114,6 +117,7 @@ void main() {
         // Initial storage
         await service.storePackageData(
           packageName: packageName,
+          targetPackage: 'analyzer',
           devAnalyzerVersion: '^6.0.0',
           devVersion: '1.0.0',
           devDate: DateTime.now(),
@@ -126,6 +130,7 @@ void main() {
         // Update the same package
         await service.storePackageData(
           packageName: packageName,
+          targetPackage: 'analyzer',
           devAnalyzerVersion: '^7.0.0',
           devVersion: '2.0.0',
           devDate: DateTime.now(),

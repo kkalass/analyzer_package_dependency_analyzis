@@ -15,19 +15,36 @@ void main(List<String> arguments) async {
 
   switch (command) {
     case 'fetch':
-      await performFetch();
+      if (arguments.length < 2) {
+        print('Error: target package is required for fetch command');
+        printUsage();
+        return;
+      }
+      await performFetch(arguments[1]);
       break;
     case 'list':
-      await listStoredPackages();
+      String? targetPackage = arguments.length > 1 ? arguments[1] : null;
+      await listStoredPackages(targetPackage);
       break;
     case 'csv':
-      await exportToCSV();
+      String? targetPackage = arguments.length > 1 ? arguments[1] : null;
+      await exportToCSV(targetPackage);
       break;
     case 'status':
-      await showSearchStatus();
+      if (arguments.length < 2) {
+        print('Error: target package is required for status command');
+        printUsage();
+        return;
+      }
+      await showSearchStatus(arguments[1]);
       break;
     case 'clear':
-      await clearSearchState();
+      if (arguments.length < 2) {
+        print('Error: target package is required for clear command');
+        printUsage();
+        return;
+      }
+      await clearSearchState(arguments[1]);
       break;
     case 'help':
     case '--help':
@@ -42,33 +59,42 @@ void main(List<String> arguments) async {
 
 /// Prints usage information for the application
 void printUsage() {
-  print('Package Analyzer Tool');
+  print('Package Dependency Analysis Tool');
   print('');
-  print('Usage: dart run bin/console.dart <command>');
+  print('Usage: dart run bin/console.dart <command> [target_package]');
   print('');
   print('Commands:');
-  print('  fetch    Fetch and store all packages with analyzer dependency');
-  print('  list     List all packages currently stored in the database');
-  print('  csv      Export all package data to a CSV file');
-  print('  status   Show current search progress and state');
-  print('  clear    Clear search state (use if you want to restart)');
-  print('  help     Show this help message');
+  print(
+    '  fetch <pkg>    Fetch and store all packages with dependency on <pkg>',
+  );
+  print(
+    '  list [pkg]     List all packages stored in the database (optionally filter by target package)',
+  );
+  print(
+    '  csv [pkg]      Export package data to CSV (optionally filter by target package)',
+  );
+  print('  status <pkg>   Show current search progress for target package');
+  print(
+    '  clear <pkg>    Clear search state for target package (use if you want to restart)',
+  );
+  print('  help           Show this help message');
   print('');
   print('Examples:');
-  print('  dart run bin/console.dart fetch');
-  print('  dart run bin/console.dart list');
+  print('  dart run bin/console.dart fetch analyzer');
+  print('  dart run bin/console.dart fetch flutter');
+  print('  dart run bin/console.dart list analyzer');
   print('  dart run bin/console.dart csv');
-  print('  dart run bin/console.dart status');
+  print('  dart run bin/console.dart status analyzer');
 }
 
-/// Performs the fetch operation to get all packages with analyzer dependency
-Future<void> performFetch() async {
+/// Performs the fetch operation to get all packages with dependency on target package
+Future<void> performFetch(String targetPackage) async {
   final client = PubClient();
   final service = PackageDataService.create();
-  const searchId = 'analyzer_dependency';
+  final searchId = '${targetPackage}_dependency';
 
   try {
-    print('Searching for packages with analyzer dependency...');
+    print('Searching for packages with $targetPackage dependency...');
 
     // Check if we have an existing search state to resume
     final existingState = await service.getSearchState(searchId);
@@ -89,6 +115,7 @@ Future<void> performFetch() async {
               client,
               service,
               searchId,
+              targetPackage,
             )).map((pkg) => SerializablePackage(pkg.package)).toList();
 
         // Update state to mark discovery as complete and start processing
@@ -132,6 +159,7 @@ Future<void> performFetch() async {
               client,
               service,
               searchId,
+              targetPackage,
             )).map((pkg) => SerializablePackage(pkg.package)).toList();
 
         print(
@@ -190,6 +218,7 @@ Future<void> performFetch() async {
           final packageData = await fetchAndStorePackageData(
             client,
             package.package,
+            targetPackage,
             service: service, // Reuse the service instance
           );
 
@@ -253,25 +282,48 @@ Future<void> performFetch() async {
 }
 
 /// Lists all packages currently stored in the database
-Future<void> listStoredPackages() async {
+Future<void> listStoredPackages(String? targetPackage) async {
   final service = PackageDataService.create();
 
   try {
-    final allStored = await service.getAllPackageData();
+    final allStored =
+        targetPackage != null
+            ? await service.getAllPackageDataForTarget(targetPackage)
+            : await service.getAllPackageData();
 
     if (allStored.isEmpty) {
-      print('No packages found in database.');
-      print('Run "dart run bin/console.dart fetch" to fetch package data.');
+      if (targetPackage != null) {
+        print(
+          'No packages found in database for target package "$targetPackage".',
+        );
+        print(
+          'Run "dart run bin/console.dart fetch $targetPackage" to fetch package data.',
+        );
+      } else {
+        print('No packages found in database.');
+        print(
+          'Run "dart run bin/console.dart fetch <package>" to fetch package data.',
+        );
+      }
       return;
     }
 
-    print('Found ${allStored.length} packages in database:');
+    if (targetPackage != null) {
+      print(
+        'Found ${allStored.length} packages with dependency on "$targetPackage":',
+      );
+    } else {
+      print('Found ${allStored.length} packages in database:');
+    }
     print('');
 
     for (int i = 0; i < allStored.length; i++) {
       final pkg = allStored[i];
       print('${i + 1}. ${pkg.packageName}');
-      print('   Analyzer version: ${pkg.devAnalyzerVersion ?? 'Not found'}');
+      print('   Target package: ${pkg.targetPackage}');
+      print(
+        '   Target package version: ${pkg.devAnalyzerVersion ?? 'Not found'}',
+      );
       print('   Dev version: ${pkg.devVersion ?? 'N/A'}');
       print('   Published version: ${pkg.publishedVersion ?? 'N/A'}');
       print('   Repository: ${pkg.repoUrl ?? 'Not found'}');
@@ -280,14 +332,14 @@ Future<void> listStoredPackages() async {
     }
 
     // Summary statistics
-    final withAnalyzer =
+    final withTargetPackage =
         allStored.where((p) => p.devAnalyzerVersion != null).length;
     final withRepo = allStored.where((p) => p.repoUrl != null).length;
 
     print('--- Statistics ---');
     print('Total packages: ${allStored.length}');
     print(
-      'Packages with analyzer dependency: $withAnalyzer (${(withAnalyzer / allStored.length * 100).toStringAsFixed(1)}%)',
+      'Packages with target dependency: $withTargetPackage (${(withTargetPackage / allStored.length * 100).toStringAsFixed(1)}%)',
     );
     print(
       'Packages with repository URL: $withRepo (${(withRepo / allStored.length * 100).toStringAsFixed(1)}%)',
@@ -298,37 +350,53 @@ Future<void> listStoredPackages() async {
 }
 
 /// Exports all package data to a CSV file
-Future<void> exportToCSV() async {
+Future<void> exportToCSV(String? targetPackage) async {
   final service = PackageDataService.create();
 
   try {
-    final allStored = await service.getAllPackageData();
+    final allStored =
+        targetPackage != null
+            ? await service.getAllPackageDataForTarget(targetPackage)
+            : await service.getAllPackageData();
 
     if (allStored.isEmpty) {
-      print('No packages found in database.');
-      print(
-        'Run "dart run bin/console.dart fetch" to fetch package data first.',
-      );
+      if (targetPackage != null) {
+        print(
+          'No packages found in database for target package "$targetPackage".',
+        );
+        print(
+          'Run "dart run bin/console.dart fetch $targetPackage" to fetch package data first.',
+        );
+      } else {
+        print('No packages found in database.');
+        print(
+          'Run "dart run bin/console.dart fetch <package>" to fetch package data first.',
+        );
+      }
       return;
     }
 
     // Generate filename with timestamp
     final timestamp =
         DateTime.now().toIso8601String().replaceAll(':', '-').split('.')[0];
-    final filename = 'packages_export_$timestamp.csv';
+    final filename =
+        targetPackage != null
+            ? '${targetPackage}_dependents_export_$timestamp.csv'
+            : 'packages_export_$timestamp.csv';
 
     // Prepare CSV content
     final csvLines = <String>[];
 
     // Add header
     csvLines.add(
-      'Package Name,Analyzer Version,Dev Version,Dev Date,Published Date,Published Version,Repository URL,Created At,Updated At',
+      'Package Name,Target Package,Target Package Version,Dev Version,Dev Date,Published Date,Published Version,Repository URL,Created At,Updated At',
     );
 
     // Add data rows
     for (final pkg in allStored) {
       final row = [
         _escapeCsvField(pkg.packageName),
+        _escapeCsvField(pkg.targetPackage),
         _escapeCsvField(pkg.devAnalyzerVersion ?? ''),
         _escapeCsvField(pkg.devVersion ?? ''),
         _escapeCsvField(pkg.devDate.toIso8601String()),
@@ -350,14 +418,14 @@ Future<void> exportToCSV() async {
     print('✓ Exported ${allStored.length} packages to: $filename');
 
     // Show summary statistics
-    final withAnalyzer =
+    final withTargetPackage =
         allStored.where((p) => p.devAnalyzerVersion != null).length;
     final withRepo = allStored.where((p) => p.repoUrl != null).length;
 
     print('');
     print('Export summary:');
     print('  Total packages: ${allStored.length}');
-    print('  With analyzer dependency: $withAnalyzer');
+    print('  With target dependency: $withTargetPackage');
     print('  With repository URL: $withRepo');
     print('  File size: ${(await file.length() / 1024).toStringAsFixed(1)} KB');
   } catch (e) {
@@ -379,36 +447,38 @@ String _escapeCsvField(String field) {
   return field;
 }
 
-/// Fetches all packages with analyzer dependency using the built-in fetchAllPackages method
+/// Fetches all packages with target package dependency using the built-in fetchAllPackages method
 ///
 /// Uses the pub_api_client's built-in recursive paging to get the complete list
-/// of packages that depend on the analyzer package.
-Future<List<PackageResult>> fetchAllPackagesWithAnalyzerDependency(
+/// of packages that depend on the target package.
+Future<List<PackageResult>> fetchAllPackagesWithTargetDependency(
   PubClient client,
+  String targetPackage,
 ) async {
-  print('Fetching all packages with analyzer dependency...');
+  print('Fetching all packages with $targetPackage dependency...');
 
   // Use the built-in fetchAllPackages method with dependency tag
   final allPackages = await client.fetchAllPackages(
     '', // Empty search query to get all packages
-    tags: [PackageTag.dependency('analyzer')],
+    tags: [PackageTag.dependency(targetPackage)],
   );
 
   print(
-    'Completed: Found ${allPackages.length} total packages with analyzer dependency',
+    'Completed: Found ${allPackages.length} total packages with $targetPackage dependency',
   );
   return allPackages;
 }
 
-/// Fetches all packages with analyzer dependency using pagination with persistence
+/// Fetches all packages with target package dependency using pagination with persistence
 ///
 /// Iterates through all pages of search results to get the complete list
-/// of packages that depend on the analyzer package. Persists progress after each page
+/// of packages that depend on the target package. Persists progress after each page
 /// so that the fetch can be resumed if interrupted.
 Future<List<PackageResult>> fetchAllPackagesWithPagination(
   PubClient client,
   PackageDataService service,
   String searchId,
+  String targetPackage,
 ) async {
   // Check if we have existing state to resume from
   final existingState = await service.getSearchState(searchId);
@@ -474,7 +544,7 @@ Future<List<PackageResult>> fetchAllPackagesWithPagination(
     print('Starting fresh package discovery...');
 
     // Get first page
-    currentResults = await listPackages(client);
+    currentResults = await listPackages(client, targetPackage);
     allPackages.addAll(currentResults.packages);
     pageCount++;
     print('Page $pageCount: Found ${currentResults.packages.length} packages');
@@ -572,30 +642,34 @@ Future<void> _savePaginationProgress(
   }
 }
 
-Future<SearchResults> listPackages(PubClient client) async {
+Future<SearchResults> listPackages(
+  PubClient client,
+  String targetPackage,
+) async {
   return await client.search(
     '', // Empty search term to get all packages with the dependency tag
-    tags: [PackageTag.dependency('analyzer')],
+    tags: [PackageTag.dependency(targetPackage)],
   );
 }
 
 /// Shows the current search status and progress
-Future<void> showSearchStatus() async {
+Future<void> showSearchStatus(String targetPackage) async {
   final service = PackageDataService.create();
-  const searchId = 'analyzer_dependency';
+  final searchId = '${targetPackage}_dependency';
 
   try {
     final state = await service.getSearchState(searchId);
 
     if (state == null) {
       print(
-        'No search state found. Run "dart run bin/console.dart fetch" to start.',
+        'No search state found for target package "$targetPackage". Run "dart run bin/console.dart fetch $targetPackage" to start.',
       );
       return;
     }
 
-    print('Search Status:');
+    print('Search Status for "$targetPackage":');
     print('  Search ID: ${state.searchId}');
+    print('  Target Package: ${state.targetPackage}');
     print('  Started: ${state.searchStarted}');
     print('  Last Updated: ${state.lastUpdated}');
     print('  Current Page: ${state.currentPage}');
@@ -616,17 +690,19 @@ Future<void> showSearchStatus() async {
     if (!state.discoveryCompleted) {
       print('');
       print(
-        'Currently discovering packages. Run "dart run bin/console.dart fetch" to continue.',
+        'Currently discovering packages. Run "dart run bin/console.dart fetch $targetPackage" to continue.',
       );
     } else if (!state.processingCompleted) {
       final remaining = state.totalCount - state.currentIndex;
       print('  Remaining: $remaining packages');
       print('');
-      print('Run "dart run bin/console.dart fetch" to continue processing.');
+      print(
+        'Run "dart run bin/console.dart fetch $targetPackage" to continue processing.',
+      );
     } else {
       print('');
       print(
-        'Search completed! Run "dart run bin/console.dart clear" to remove search state.',
+        'Search completed! Run "dart run bin/console.dart clear $targetPackage" to remove search state.',
       );
     }
   } finally {
@@ -635,26 +711,30 @@ Future<void> showSearchStatus() async {
 }
 
 /// Clears the search state
-Future<void> clearSearchState() async {
+Future<void> clearSearchState(String targetPackage) async {
   final service = PackageDataService.create();
-  const searchId = 'analyzer_dependency';
+  final searchId = '${targetPackage}_dependency';
 
   try {
     final state = await service.getSearchState(searchId);
 
     if (state == null) {
-      print('No search state found to clear.');
+      print(
+        'No search state found to clear for target package "$targetPackage".',
+      );
       return;
     }
 
     await service.clearSearchState(searchId);
-    print('✓ Search state cleared successfully.');
+    print('✓ Search state cleared successfully for "$targetPackage".');
     print(
       '  Previous progress: ${state.currentIndex}/${state.totalCount} packages',
     );
     print('  Started: ${state.searchStarted}');
     print('');
-    print('You can now run "dart run bin/console.dart fetch" to start fresh.');
+    print(
+      'You can now run "dart run bin/console.dart fetch $targetPackage" to start fresh.',
+    );
   } finally {
     await service.close();
   }

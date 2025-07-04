@@ -18,9 +18,10 @@ class PackageDataService {
   /// Stores package data in the database
   ///
   /// Uses upsert operation to either insert new data or update existing data
-  /// based on the package name as the primary key.
+  /// based on the package name and target package as the primary key.
   Future<void> storePackageData({
     required String packageName,
+    required String targetPackage,
     String? devAnalyzerVersion,
     String? devVersion,
     required DateTime devDate,
@@ -35,6 +36,7 @@ class PackageDataService {
   }) async {
     final companion = PackageDataTableCompanion(
       packageName: Value(packageName),
+      targetPackage: Value(targetPackage),
       devAnalyzerVersion: Value(devAnalyzerVersion),
       devVersion: Value(devVersion),
       devDate: Value(devDate),
@@ -64,6 +66,15 @@ class PackageDataService {
   /// Returns a list of all package data ordered by creation date (newest first).
   Future<List<PackageDataTableData>> getAllPackageData() async {
     return await _database.getAllPackageData();
+  }
+
+  /// Retrieves all stored package data for a specific target package
+  ///
+  /// Returns a list of package data for the given target package.
+  Future<List<PackageDataTableData>> getAllPackageDataForTarget(
+    String targetPackage,
+  ) async {
+    return await _database.getAllPackageDataForTarget(targetPackage);
   }
 
   /// Deletes package data by package name
