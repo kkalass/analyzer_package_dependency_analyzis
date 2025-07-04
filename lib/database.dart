@@ -7,6 +7,87 @@ import 'package:path/path.dart' as p;
 
 part 'database.g.dart';
 
+/// Table definition for storing target package versions from pub.dev
+class TargetPackageVersionTable extends Table {
+  @override
+  String get tableName => 'target_package_versions';
+
+  /// Primary key - target package name
+  TextColumn get targetPackage => text()();
+
+  /// Version string (e.g., "1.2.3")
+  TextColumn get version => text()();
+
+  /// Major version number
+  IntColumn get majorVersion => integer()();
+
+  /// Minor version number
+  IntColumn get minorVersion => integer()();
+
+  /// Patch version number
+  IntColumn get patchVersion => integer()();
+
+  /// When this version was published on pub.dev
+  DateTimeColumn get publishedDate => dateTime()();
+
+  /// When this record was created
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  Set<Column> get primaryKey => {targetPackage, version};
+}
+
+/// Table definition for storing supported versions per dependent
+class DependentSupportedVersionTable extends Table {
+  @override
+  String get tableName => 'dependent_supported_versions';
+
+  /// Primary key - dependent package name
+  TextColumn get dependentPackage => text()();
+
+  /// Primary key - target package name
+  TextColumn get targetPackage => text()();
+
+  /// Primary key - supported version string
+  TextColumn get supportedVersion => text()();
+
+  /// Constraint string from pubspec.yaml (e.g., "^1.0.0")
+  TextColumn get constraintString => text()();
+
+  /// When this record was created
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  Set<Column> get primaryKey => {dependentPackage, targetPackage, supportedVersion};
+}
+
+/// Table definition for storing version compatibility reports
+class VersionCompatibilityReportTable extends Table {
+  @override
+  String get tableName => 'version_compatibility_reports';
+
+  /// Primary key - target package name
+  TextColumn get targetPackage => text()();
+
+  /// Primary key - target package version
+  TextColumn get targetVersion => text()();
+
+  /// Number of dependents that support this version
+  IntColumn get supportedDependentsCount => integer()();
+
+  /// Total number of dependents analyzed
+  IntColumn get totalDependentsCount => integer()();
+
+  /// Percentage of dependents that support this version (0-100)
+  RealColumn get supportPercentage => real()();
+
+  /// When this report was generated
+  DateTimeColumn get generatedAt => dateTime().withDefault(currentDateAndTime)();
+
+  @override
+  Set<Column> get primaryKey => {targetPackage, targetVersion};
+}
+
 /// Table definition for storing package search state
 class PackageSearchStateTable extends Table {
   @override
@@ -107,12 +188,18 @@ class PackageDataTable extends Table {
 }
 
 /// Database class that extends GeneratedDatabase
-@DriftDatabase(tables: [PackageDataTable, PackageSearchStateTable])
+@DriftDatabase(tables: [
+  PackageDataTable,
+  PackageSearchStateTable,
+  TargetPackageVersionTable,
+  DependentSupportedVersionTable,
+  VersionCompatibilityReportTable,
+])
 class PackageDatabase extends _$PackageDatabase {
   PackageDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -149,6 +236,12 @@ class PackageDatabase extends _$PackageDatabase {
         // Change primary key to composite (packageName, targetPackage)
         await m.drop(packageDataTable);
         await m.createTable(packageDataTable);
+      }
+      if (from < 8) {
+        // Add new tables for version compatibility analysis
+        await m.createTable(targetPackageVersionTable);
+        await m.createTable(dependentSupportedVersionTable);
+        await m.createTable(versionCompatibilityReportTable);
       }
     },
   );
@@ -375,6 +468,118 @@ class PackageDatabase extends _$PackageDatabase {
   /// Clears all package data
   Future<void> clearAllPackageData() async {
     await delete(packageDataTable).go();
+  }
+
+  /// Stores target package version information
+  Future<void> storeTargetPackageVersion({
+    required String targetPackage,
+    required String version,
+    required int majorVersion,
+    required int minorVersion,
+    required int patchVersion,
+    required DateTime publishedDate,
+  }) async {
+    await into(targetPackageVersionTable).insertOnConflictUpdate(
+      TargetPackageVersionTableCompanion(
+        targetPackage: Value(targetPackage),
+        version: Value(version),
+        majorVersion: Value(majorVersion),
+        minorVersion: Value(minorVersion),
+        patchVersion: Value(patchVersion),
+        publishedDate: Value(publishedDate),
+      ),
+    );
+  }
+
+  /// Retrieves target package versions ordered by version descending
+  Future<List<TargetPackageVersionTableData>> getTargetPackageVersions(
+    String targetPackage,
+  ) async {
+    return (select(targetPackageVersionTable)
+          ..where((tbl) => tbl.targetPackage.equals(targetPackage))
+          ..orderBy([
+            (tbl) => OrderingTerm.desc(tbl.majorVersion),
+            (tbl) => OrderingTerm.desc(tbl.minorVersion),
+            (tbl) => OrderingTerm.desc(tbl.patchVersion),
+          ]))
+        .get();
+  }
+
+  /// Stores supported version information for a dependent
+  Future<void> storeDependentSupportedVersion({
+    required String dependentPackage,
+    required String targetPackage,
+    required String supportedVersion,
+    required String constraintString,
+  }) async {
+    await into(dependentSupportedVersionTable).insertOnConflictUpdate(
+      DependentSupportedVersionTableCompanion(
+        dependentPackage: Value(dependentPackage),
+        targetPackage: Value(targetPackage),
+        supportedVersion: Value(supportedVersion),
+        constraintString: Value(constraintString),
+      ),
+    );
+  }
+
+  /// Retrieves supported versions for a dependent package
+  Future<List<DependentSupportedVersionTableData>> getDependentSupportedVersions(
+    String dependentPackage,
+    String targetPackage,
+  ) async {
+    return (select(dependentSupportedVersionTable)
+          ..where((tbl) =>
+              tbl.dependentPackage.equals(dependentPackage) &
+              tbl.targetPackage.equals(targetPackage)))
+        .get();
+  }
+
+  /// Retrieves all dependents that support a specific version
+  Future<List<DependentSupportedVersionTableData>> getDependentsSupportingVersion(
+    String targetPackage,
+    String version,
+  ) async {
+    return (select(dependentSupportedVersionTable)
+          ..where((tbl) =>
+              tbl.targetPackage.equals(targetPackage) &
+              tbl.supportedVersion.equals(version)))
+        .get();
+  }
+
+  /// Stores version compatibility report data
+  Future<void> storeVersionCompatibilityReport({
+    required String targetPackage,
+    required String targetVersion,
+    required int supportedDependentsCount,
+    required int totalDependentsCount,
+    required double supportPercentage,
+  }) async {
+    await into(versionCompatibilityReportTable).insertOnConflictUpdate(
+      VersionCompatibilityReportTableCompanion(
+        targetPackage: Value(targetPackage),
+        targetVersion: Value(targetVersion),
+        supportedDependentsCount: Value(supportedDependentsCount),
+        totalDependentsCount: Value(totalDependentsCount),
+        supportPercentage: Value(supportPercentage),
+      ),
+    );
+  }
+
+  /// Retrieves version compatibility reports for a target package
+  Future<List<VersionCompatibilityReportTableData>> getVersionCompatibilityReports(
+    String targetPackage,
+  ) async {
+    return (select(versionCompatibilityReportTable)
+          ..where((tbl) => tbl.targetPackage.equals(targetPackage))
+          ..orderBy([(tbl) => OrderingTerm.desc(tbl.generatedAt)]))
+        .get();
+  }
+
+  /// Clears version compatibility reports for a target package
+  Future<void> clearVersionCompatibilityReports(String targetPackage) async {
+    await (delete(versionCompatibilityReportTable)
+          ..where((tbl) => tbl.targetPackage.equals(targetPackage)))
+        .go();
   }
 }
 

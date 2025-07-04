@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:console/package_analysis.dart';
 import 'package:console/package_data_service.dart';
+import 'package:console/version_analysis_service.dart';
 import 'package:pub_api_client/pub_api_client.dart';
 
 void main(List<String> arguments) async {
@@ -46,6 +47,15 @@ void main(List<String> arguments) async {
       }
       await clearSearchState(arguments[1]);
       break;
+    case 'report':
+      if (arguments.length < 2) {
+        print('Error: target package is required for report command');
+        printUsage();
+        return;
+      }
+      final lastNMinorVersions = arguments.length > 2 ? int.tryParse(arguments[2]) ?? 10 : 10;
+      await generateVersionCompatibilityReport(arguments[1], lastNMinorVersions);
+      break;
     case 'help':
     case '--help':
     case '-h':
@@ -77,6 +87,9 @@ void printUsage() {
   print(
     '  clear <pkg>    Clear search state for target package (use if you want to restart)',
   );
+  print(
+    '  report <pkg> [n]  Generate version compatibility report for target package (last n minor versions, default: 10)',
+  );
   print('  help           Show this help message');
   print('');
   print('Examples:');
@@ -85,6 +98,7 @@ void printUsage() {
   print('  dart run bin/main.dart list analyzer');
   print('  dart run bin/main.dart csv');
   print('  dart run bin/main.dart status analyzer');
+  print('  dart run bin/main.dart report analyzer 5');
 }
 
 /// Performs the fetch operation to get all packages with dependency on target package
@@ -761,5 +775,84 @@ Future<void> clearSearchState(String targetPackage) async {
     );
   } finally {
     await service.close();
+  }
+}
+
+/// Generates version compatibility report
+Future<void> generateVersionCompatibilityReport(String targetPackage, int lastNMinorVersions) async {
+  final service = PackageDataService.create();
+  final client = PubClient();
+  final versionAnalysisService = VersionAnalysisService(service, client);
+
+  try {
+    print('🔍 Generating version compatibility report for "$targetPackage"...');
+    print('');
+
+    // Step 1: Fetch target package versions from pub.dev
+    print('📋 Step 1: Fetching target package versions from pub.dev...');
+    await versionAnalysisService.fetchTargetPackageVersions(targetPackage);
+
+    // Step 2: Analyze version constraints for all dependents
+    print('🔍 Step 2: Analyzing version constraints for dependents...');
+    await versionAnalysisService.analyzeVersionConstraints(targetPackage);
+
+    // Step 3: Generate compatibility report
+    print('📊 Step 3: Generating compatibility report...');
+    await versionAnalysisService.generateVersionCompatibilityReport(targetPackage, lastNMinorVersions);
+
+    // Step 4: Display report
+    print('');
+    print('📈 Version Compatibility Report for "$targetPackage"');
+    print('=' * 60);
+    
+    final reports = await service.getVersionCompatibilityReports(targetPackage);
+    
+    if (reports.isEmpty) {
+      print('No version compatibility data found.');
+      return;
+    }
+
+    print('');
+    print('| Version | Supported Dependents | Total Dependents | Support % |');
+    print('|---------|---------------------|------------------|-----------|');
+    
+    for (final report in reports) {
+      final version = report.targetVersion.padRight(8);
+      final supported = report.supportedDependentsCount.toString().padLeft(8);
+      final total = report.totalDependentsCount.toString().padLeft(8);
+      final percentage = '${report.supportPercentage.toStringAsFixed(1)}%'.padLeft(8);
+      
+      print('| $version | $supported | $total | $percentage |');
+    }
+    
+    print('');
+    print('✅ Report generated successfully!');
+    print('');
+    
+    // Additional insights
+    if (reports.isNotEmpty) {
+      final mostSupported = reports.reduce((a, b) => 
+        a.supportedDependentsCount > b.supportedDependentsCount ? a : b
+      );
+      final highestPercentage = reports.reduce((a, b) => 
+        a.supportPercentage > b.supportPercentage ? a : b
+      );
+      
+      print('💡 Insights:');
+      print('  • Most supported version: ${mostSupported.targetVersion} (${mostSupported.supportedDependentsCount} dependents)');
+      print('  • Highest percentage: ${highestPercentage.targetVersion} (${highestPercentage.supportPercentage.toStringAsFixed(1)}%)');
+      
+      final totalDependents = reports.first.totalDependentsCount;
+      final avgSupport = reports.map((r) => r.supportPercentage).reduce((a, b) => a + b) / reports.length;
+      print('  • Total dependents analyzed: $totalDependents');
+      print('  • Average support across versions: ${avgSupport.toStringAsFixed(1)}%');
+    }
+
+  } catch (e) {
+    print('❌ Error generating report: $e');
+    rethrow;
+  } finally {
+    await service.close();
+    client.close();
   }
 }

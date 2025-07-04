@@ -1727,6 +1727,1454 @@ class PackageSearchStateTableCompanion
   }
 }
 
+class $TargetPackageVersionTableTable extends TargetPackageVersionTable
+    with
+        TableInfo<
+          $TargetPackageVersionTableTable,
+          TargetPackageVersionTableData
+        > {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TargetPackageVersionTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _targetPackageMeta = const VerificationMeta(
+    'targetPackage',
+  );
+  @override
+  late final GeneratedColumn<String> targetPackage = GeneratedColumn<String>(
+    'target_package',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<String> version = GeneratedColumn<String>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _majorVersionMeta = const VerificationMeta(
+    'majorVersion',
+  );
+  @override
+  late final GeneratedColumn<int> majorVersion = GeneratedColumn<int>(
+    'major_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _minorVersionMeta = const VerificationMeta(
+    'minorVersion',
+  );
+  @override
+  late final GeneratedColumn<int> minorVersion = GeneratedColumn<int>(
+    'minor_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _patchVersionMeta = const VerificationMeta(
+    'patchVersion',
+  );
+  @override
+  late final GeneratedColumn<int> patchVersion = GeneratedColumn<int>(
+    'patch_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _publishedDateMeta = const VerificationMeta(
+    'publishedDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> publishedDate =
+      GeneratedColumn<DateTime>(
+        'published_date',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    targetPackage,
+    version,
+    majorVersion,
+    minorVersion,
+    patchVersion,
+    publishedDate,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'target_package_versions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TargetPackageVersionTableData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('target_package')) {
+      context.handle(
+        _targetPackageMeta,
+        targetPackage.isAcceptableOrUnknown(
+          data['target_package']!,
+          _targetPackageMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_targetPackageMeta);
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_versionMeta);
+    }
+    if (data.containsKey('major_version')) {
+      context.handle(
+        _majorVersionMeta,
+        majorVersion.isAcceptableOrUnknown(
+          data['major_version']!,
+          _majorVersionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_majorVersionMeta);
+    }
+    if (data.containsKey('minor_version')) {
+      context.handle(
+        _minorVersionMeta,
+        minorVersion.isAcceptableOrUnknown(
+          data['minor_version']!,
+          _minorVersionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_minorVersionMeta);
+    }
+    if (data.containsKey('patch_version')) {
+      context.handle(
+        _patchVersionMeta,
+        patchVersion.isAcceptableOrUnknown(
+          data['patch_version']!,
+          _patchVersionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_patchVersionMeta);
+    }
+    if (data.containsKey('published_date')) {
+      context.handle(
+        _publishedDateMeta,
+        publishedDate.isAcceptableOrUnknown(
+          data['published_date']!,
+          _publishedDateMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_publishedDateMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {targetPackage, version};
+  @override
+  TargetPackageVersionTableData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TargetPackageVersionTableData(
+      targetPackage:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}target_package'],
+          )!,
+      version:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}version'],
+          )!,
+      majorVersion:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}major_version'],
+          )!,
+      minorVersion:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}minor_version'],
+          )!,
+      patchVersion:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}patch_version'],
+          )!,
+      publishedDate:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}published_date'],
+          )!,
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
+    );
+  }
+
+  @override
+  $TargetPackageVersionTableTable createAlias(String alias) {
+    return $TargetPackageVersionTableTable(attachedDatabase, alias);
+  }
+}
+
+class TargetPackageVersionTableData extends DataClass
+    implements Insertable<TargetPackageVersionTableData> {
+  /// Primary key - target package name
+  final String targetPackage;
+
+  /// Version string (e.g., "1.2.3")
+  final String version;
+
+  /// Major version number
+  final int majorVersion;
+
+  /// Minor version number
+  final int minorVersion;
+
+  /// Patch version number
+  final int patchVersion;
+
+  /// When this version was published on pub.dev
+  final DateTime publishedDate;
+
+  /// When this record was created
+  final DateTime createdAt;
+  const TargetPackageVersionTableData({
+    required this.targetPackage,
+    required this.version,
+    required this.majorVersion,
+    required this.minorVersion,
+    required this.patchVersion,
+    required this.publishedDate,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['target_package'] = Variable<String>(targetPackage);
+    map['version'] = Variable<String>(version);
+    map['major_version'] = Variable<int>(majorVersion);
+    map['minor_version'] = Variable<int>(minorVersion);
+    map['patch_version'] = Variable<int>(patchVersion);
+    map['published_date'] = Variable<DateTime>(publishedDate);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  TargetPackageVersionTableCompanion toCompanion(bool nullToAbsent) {
+    return TargetPackageVersionTableCompanion(
+      targetPackage: Value(targetPackage),
+      version: Value(version),
+      majorVersion: Value(majorVersion),
+      minorVersion: Value(minorVersion),
+      patchVersion: Value(patchVersion),
+      publishedDate: Value(publishedDate),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory TargetPackageVersionTableData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TargetPackageVersionTableData(
+      targetPackage: serializer.fromJson<String>(json['targetPackage']),
+      version: serializer.fromJson<String>(json['version']),
+      majorVersion: serializer.fromJson<int>(json['majorVersion']),
+      minorVersion: serializer.fromJson<int>(json['minorVersion']),
+      patchVersion: serializer.fromJson<int>(json['patchVersion']),
+      publishedDate: serializer.fromJson<DateTime>(json['publishedDate']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'targetPackage': serializer.toJson<String>(targetPackage),
+      'version': serializer.toJson<String>(version),
+      'majorVersion': serializer.toJson<int>(majorVersion),
+      'minorVersion': serializer.toJson<int>(minorVersion),
+      'patchVersion': serializer.toJson<int>(patchVersion),
+      'publishedDate': serializer.toJson<DateTime>(publishedDate),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  TargetPackageVersionTableData copyWith({
+    String? targetPackage,
+    String? version,
+    int? majorVersion,
+    int? minorVersion,
+    int? patchVersion,
+    DateTime? publishedDate,
+    DateTime? createdAt,
+  }) => TargetPackageVersionTableData(
+    targetPackage: targetPackage ?? this.targetPackage,
+    version: version ?? this.version,
+    majorVersion: majorVersion ?? this.majorVersion,
+    minorVersion: minorVersion ?? this.minorVersion,
+    patchVersion: patchVersion ?? this.patchVersion,
+    publishedDate: publishedDate ?? this.publishedDate,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  TargetPackageVersionTableData copyWithCompanion(
+    TargetPackageVersionTableCompanion data,
+  ) {
+    return TargetPackageVersionTableData(
+      targetPackage:
+          data.targetPackage.present
+              ? data.targetPackage.value
+              : this.targetPackage,
+      version: data.version.present ? data.version.value : this.version,
+      majorVersion:
+          data.majorVersion.present
+              ? data.majorVersion.value
+              : this.majorVersion,
+      minorVersion:
+          data.minorVersion.present
+              ? data.minorVersion.value
+              : this.minorVersion,
+      patchVersion:
+          data.patchVersion.present
+              ? data.patchVersion.value
+              : this.patchVersion,
+      publishedDate:
+          data.publishedDate.present
+              ? data.publishedDate.value
+              : this.publishedDate,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TargetPackageVersionTableData(')
+          ..write('targetPackage: $targetPackage, ')
+          ..write('version: $version, ')
+          ..write('majorVersion: $majorVersion, ')
+          ..write('minorVersion: $minorVersion, ')
+          ..write('patchVersion: $patchVersion, ')
+          ..write('publishedDate: $publishedDate, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    targetPackage,
+    version,
+    majorVersion,
+    minorVersion,
+    patchVersion,
+    publishedDate,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TargetPackageVersionTableData &&
+          other.targetPackage == this.targetPackage &&
+          other.version == this.version &&
+          other.majorVersion == this.majorVersion &&
+          other.minorVersion == this.minorVersion &&
+          other.patchVersion == this.patchVersion &&
+          other.publishedDate == this.publishedDate &&
+          other.createdAt == this.createdAt);
+}
+
+class TargetPackageVersionTableCompanion
+    extends UpdateCompanion<TargetPackageVersionTableData> {
+  final Value<String> targetPackage;
+  final Value<String> version;
+  final Value<int> majorVersion;
+  final Value<int> minorVersion;
+  final Value<int> patchVersion;
+  final Value<DateTime> publishedDate;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const TargetPackageVersionTableCompanion({
+    this.targetPackage = const Value.absent(),
+    this.version = const Value.absent(),
+    this.majorVersion = const Value.absent(),
+    this.minorVersion = const Value.absent(),
+    this.patchVersion = const Value.absent(),
+    this.publishedDate = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TargetPackageVersionTableCompanion.insert({
+    required String targetPackage,
+    required String version,
+    required int majorVersion,
+    required int minorVersion,
+    required int patchVersion,
+    required DateTime publishedDate,
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : targetPackage = Value(targetPackage),
+       version = Value(version),
+       majorVersion = Value(majorVersion),
+       minorVersion = Value(minorVersion),
+       patchVersion = Value(patchVersion),
+       publishedDate = Value(publishedDate);
+  static Insertable<TargetPackageVersionTableData> custom({
+    Expression<String>? targetPackage,
+    Expression<String>? version,
+    Expression<int>? majorVersion,
+    Expression<int>? minorVersion,
+    Expression<int>? patchVersion,
+    Expression<DateTime>? publishedDate,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (targetPackage != null) 'target_package': targetPackage,
+      if (version != null) 'version': version,
+      if (majorVersion != null) 'major_version': majorVersion,
+      if (minorVersion != null) 'minor_version': minorVersion,
+      if (patchVersion != null) 'patch_version': patchVersion,
+      if (publishedDate != null) 'published_date': publishedDate,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TargetPackageVersionTableCompanion copyWith({
+    Value<String>? targetPackage,
+    Value<String>? version,
+    Value<int>? majorVersion,
+    Value<int>? minorVersion,
+    Value<int>? patchVersion,
+    Value<DateTime>? publishedDate,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return TargetPackageVersionTableCompanion(
+      targetPackage: targetPackage ?? this.targetPackage,
+      version: version ?? this.version,
+      majorVersion: majorVersion ?? this.majorVersion,
+      minorVersion: minorVersion ?? this.minorVersion,
+      patchVersion: patchVersion ?? this.patchVersion,
+      publishedDate: publishedDate ?? this.publishedDate,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (targetPackage.present) {
+      map['target_package'] = Variable<String>(targetPackage.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<String>(version.value);
+    }
+    if (majorVersion.present) {
+      map['major_version'] = Variable<int>(majorVersion.value);
+    }
+    if (minorVersion.present) {
+      map['minor_version'] = Variable<int>(minorVersion.value);
+    }
+    if (patchVersion.present) {
+      map['patch_version'] = Variable<int>(patchVersion.value);
+    }
+    if (publishedDate.present) {
+      map['published_date'] = Variable<DateTime>(publishedDate.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TargetPackageVersionTableCompanion(')
+          ..write('targetPackage: $targetPackage, ')
+          ..write('version: $version, ')
+          ..write('majorVersion: $majorVersion, ')
+          ..write('minorVersion: $minorVersion, ')
+          ..write('patchVersion: $patchVersion, ')
+          ..write('publishedDate: $publishedDate, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $DependentSupportedVersionTableTable
+    extends DependentSupportedVersionTable
+    with
+        TableInfo<
+          $DependentSupportedVersionTableTable,
+          DependentSupportedVersionTableData
+        > {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $DependentSupportedVersionTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _dependentPackageMeta = const VerificationMeta(
+    'dependentPackage',
+  );
+  @override
+  late final GeneratedColumn<String> dependentPackage = GeneratedColumn<String>(
+    'dependent_package',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _targetPackageMeta = const VerificationMeta(
+    'targetPackage',
+  );
+  @override
+  late final GeneratedColumn<String> targetPackage = GeneratedColumn<String>(
+    'target_package',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _supportedVersionMeta = const VerificationMeta(
+    'supportedVersion',
+  );
+  @override
+  late final GeneratedColumn<String> supportedVersion = GeneratedColumn<String>(
+    'supported_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _constraintStringMeta = const VerificationMeta(
+    'constraintString',
+  );
+  @override
+  late final GeneratedColumn<String> constraintString = GeneratedColumn<String>(
+    'constraint_string',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    dependentPackage,
+    targetPackage,
+    supportedVersion,
+    constraintString,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'dependent_supported_versions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<DependentSupportedVersionTableData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('dependent_package')) {
+      context.handle(
+        _dependentPackageMeta,
+        dependentPackage.isAcceptableOrUnknown(
+          data['dependent_package']!,
+          _dependentPackageMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_dependentPackageMeta);
+    }
+    if (data.containsKey('target_package')) {
+      context.handle(
+        _targetPackageMeta,
+        targetPackage.isAcceptableOrUnknown(
+          data['target_package']!,
+          _targetPackageMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_targetPackageMeta);
+    }
+    if (data.containsKey('supported_version')) {
+      context.handle(
+        _supportedVersionMeta,
+        supportedVersion.isAcceptableOrUnknown(
+          data['supported_version']!,
+          _supportedVersionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_supportedVersionMeta);
+    }
+    if (data.containsKey('constraint_string')) {
+      context.handle(
+        _constraintStringMeta,
+        constraintString.isAcceptableOrUnknown(
+          data['constraint_string']!,
+          _constraintStringMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_constraintStringMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {
+    dependentPackage,
+    targetPackage,
+    supportedVersion,
+  };
+  @override
+  DependentSupportedVersionTableData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return DependentSupportedVersionTableData(
+      dependentPackage:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}dependent_package'],
+          )!,
+      targetPackage:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}target_package'],
+          )!,
+      supportedVersion:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}supported_version'],
+          )!,
+      constraintString:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}constraint_string'],
+          )!,
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
+    );
+  }
+
+  @override
+  $DependentSupportedVersionTableTable createAlias(String alias) {
+    return $DependentSupportedVersionTableTable(attachedDatabase, alias);
+  }
+}
+
+class DependentSupportedVersionTableData extends DataClass
+    implements Insertable<DependentSupportedVersionTableData> {
+  /// Primary key - dependent package name
+  final String dependentPackage;
+
+  /// Primary key - target package name
+  final String targetPackage;
+
+  /// Primary key - supported version string
+  final String supportedVersion;
+
+  /// Constraint string from pubspec.yaml (e.g., "^1.0.0")
+  final String constraintString;
+
+  /// When this record was created
+  final DateTime createdAt;
+  const DependentSupportedVersionTableData({
+    required this.dependentPackage,
+    required this.targetPackage,
+    required this.supportedVersion,
+    required this.constraintString,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['dependent_package'] = Variable<String>(dependentPackage);
+    map['target_package'] = Variable<String>(targetPackage);
+    map['supported_version'] = Variable<String>(supportedVersion);
+    map['constraint_string'] = Variable<String>(constraintString);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  DependentSupportedVersionTableCompanion toCompanion(bool nullToAbsent) {
+    return DependentSupportedVersionTableCompanion(
+      dependentPackage: Value(dependentPackage),
+      targetPackage: Value(targetPackage),
+      supportedVersion: Value(supportedVersion),
+      constraintString: Value(constraintString),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory DependentSupportedVersionTableData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return DependentSupportedVersionTableData(
+      dependentPackage: serializer.fromJson<String>(json['dependentPackage']),
+      targetPackage: serializer.fromJson<String>(json['targetPackage']),
+      supportedVersion: serializer.fromJson<String>(json['supportedVersion']),
+      constraintString: serializer.fromJson<String>(json['constraintString']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'dependentPackage': serializer.toJson<String>(dependentPackage),
+      'targetPackage': serializer.toJson<String>(targetPackage),
+      'supportedVersion': serializer.toJson<String>(supportedVersion),
+      'constraintString': serializer.toJson<String>(constraintString),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  DependentSupportedVersionTableData copyWith({
+    String? dependentPackage,
+    String? targetPackage,
+    String? supportedVersion,
+    String? constraintString,
+    DateTime? createdAt,
+  }) => DependentSupportedVersionTableData(
+    dependentPackage: dependentPackage ?? this.dependentPackage,
+    targetPackage: targetPackage ?? this.targetPackage,
+    supportedVersion: supportedVersion ?? this.supportedVersion,
+    constraintString: constraintString ?? this.constraintString,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  DependentSupportedVersionTableData copyWithCompanion(
+    DependentSupportedVersionTableCompanion data,
+  ) {
+    return DependentSupportedVersionTableData(
+      dependentPackage:
+          data.dependentPackage.present
+              ? data.dependentPackage.value
+              : this.dependentPackage,
+      targetPackage:
+          data.targetPackage.present
+              ? data.targetPackage.value
+              : this.targetPackage,
+      supportedVersion:
+          data.supportedVersion.present
+              ? data.supportedVersion.value
+              : this.supportedVersion,
+      constraintString:
+          data.constraintString.present
+              ? data.constraintString.value
+              : this.constraintString,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DependentSupportedVersionTableData(')
+          ..write('dependentPackage: $dependentPackage, ')
+          ..write('targetPackage: $targetPackage, ')
+          ..write('supportedVersion: $supportedVersion, ')
+          ..write('constraintString: $constraintString, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    dependentPackage,
+    targetPackage,
+    supportedVersion,
+    constraintString,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is DependentSupportedVersionTableData &&
+          other.dependentPackage == this.dependentPackage &&
+          other.targetPackage == this.targetPackage &&
+          other.supportedVersion == this.supportedVersion &&
+          other.constraintString == this.constraintString &&
+          other.createdAt == this.createdAt);
+}
+
+class DependentSupportedVersionTableCompanion
+    extends UpdateCompanion<DependentSupportedVersionTableData> {
+  final Value<String> dependentPackage;
+  final Value<String> targetPackage;
+  final Value<String> supportedVersion;
+  final Value<String> constraintString;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const DependentSupportedVersionTableCompanion({
+    this.dependentPackage = const Value.absent(),
+    this.targetPackage = const Value.absent(),
+    this.supportedVersion = const Value.absent(),
+    this.constraintString = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  DependentSupportedVersionTableCompanion.insert({
+    required String dependentPackage,
+    required String targetPackage,
+    required String supportedVersion,
+    required String constraintString,
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : dependentPackage = Value(dependentPackage),
+       targetPackage = Value(targetPackage),
+       supportedVersion = Value(supportedVersion),
+       constraintString = Value(constraintString);
+  static Insertable<DependentSupportedVersionTableData> custom({
+    Expression<String>? dependentPackage,
+    Expression<String>? targetPackage,
+    Expression<String>? supportedVersion,
+    Expression<String>? constraintString,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (dependentPackage != null) 'dependent_package': dependentPackage,
+      if (targetPackage != null) 'target_package': targetPackage,
+      if (supportedVersion != null) 'supported_version': supportedVersion,
+      if (constraintString != null) 'constraint_string': constraintString,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  DependentSupportedVersionTableCompanion copyWith({
+    Value<String>? dependentPackage,
+    Value<String>? targetPackage,
+    Value<String>? supportedVersion,
+    Value<String>? constraintString,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return DependentSupportedVersionTableCompanion(
+      dependentPackage: dependentPackage ?? this.dependentPackage,
+      targetPackage: targetPackage ?? this.targetPackage,
+      supportedVersion: supportedVersion ?? this.supportedVersion,
+      constraintString: constraintString ?? this.constraintString,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (dependentPackage.present) {
+      map['dependent_package'] = Variable<String>(dependentPackage.value);
+    }
+    if (targetPackage.present) {
+      map['target_package'] = Variable<String>(targetPackage.value);
+    }
+    if (supportedVersion.present) {
+      map['supported_version'] = Variable<String>(supportedVersion.value);
+    }
+    if (constraintString.present) {
+      map['constraint_string'] = Variable<String>(constraintString.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('DependentSupportedVersionTableCompanion(')
+          ..write('dependentPackage: $dependentPackage, ')
+          ..write('targetPackage: $targetPackage, ')
+          ..write('supportedVersion: $supportedVersion, ')
+          ..write('constraintString: $constraintString, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $VersionCompatibilityReportTableTable
+    extends VersionCompatibilityReportTable
+    with
+        TableInfo<
+          $VersionCompatibilityReportTableTable,
+          VersionCompatibilityReportTableData
+        > {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $VersionCompatibilityReportTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _targetPackageMeta = const VerificationMeta(
+    'targetPackage',
+  );
+  @override
+  late final GeneratedColumn<String> targetPackage = GeneratedColumn<String>(
+    'target_package',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _targetVersionMeta = const VerificationMeta(
+    'targetVersion',
+  );
+  @override
+  late final GeneratedColumn<String> targetVersion = GeneratedColumn<String>(
+    'target_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _supportedDependentsCountMeta =
+      const VerificationMeta('supportedDependentsCount');
+  @override
+  late final GeneratedColumn<int> supportedDependentsCount =
+      GeneratedColumn<int>(
+        'supported_dependents_count',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _totalDependentsCountMeta =
+      const VerificationMeta('totalDependentsCount');
+  @override
+  late final GeneratedColumn<int> totalDependentsCount = GeneratedColumn<int>(
+    'total_dependents_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _supportPercentageMeta = const VerificationMeta(
+    'supportPercentage',
+  );
+  @override
+  late final GeneratedColumn<double> supportPercentage =
+      GeneratedColumn<double>(
+        'support_percentage',
+        aliasedName,
+        false,
+        type: DriftSqlType.double,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _generatedAtMeta = const VerificationMeta(
+    'generatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> generatedAt = GeneratedColumn<DateTime>(
+    'generated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    targetPackage,
+    targetVersion,
+    supportedDependentsCount,
+    totalDependentsCount,
+    supportPercentage,
+    generatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'version_compatibility_reports';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<VersionCompatibilityReportTableData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('target_package')) {
+      context.handle(
+        _targetPackageMeta,
+        targetPackage.isAcceptableOrUnknown(
+          data['target_package']!,
+          _targetPackageMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_targetPackageMeta);
+    }
+    if (data.containsKey('target_version')) {
+      context.handle(
+        _targetVersionMeta,
+        targetVersion.isAcceptableOrUnknown(
+          data['target_version']!,
+          _targetVersionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_targetVersionMeta);
+    }
+    if (data.containsKey('supported_dependents_count')) {
+      context.handle(
+        _supportedDependentsCountMeta,
+        supportedDependentsCount.isAcceptableOrUnknown(
+          data['supported_dependents_count']!,
+          _supportedDependentsCountMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_supportedDependentsCountMeta);
+    }
+    if (data.containsKey('total_dependents_count')) {
+      context.handle(
+        _totalDependentsCountMeta,
+        totalDependentsCount.isAcceptableOrUnknown(
+          data['total_dependents_count']!,
+          _totalDependentsCountMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_totalDependentsCountMeta);
+    }
+    if (data.containsKey('support_percentage')) {
+      context.handle(
+        _supportPercentageMeta,
+        supportPercentage.isAcceptableOrUnknown(
+          data['support_percentage']!,
+          _supportPercentageMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_supportPercentageMeta);
+    }
+    if (data.containsKey('generated_at')) {
+      context.handle(
+        _generatedAtMeta,
+        generatedAt.isAcceptableOrUnknown(
+          data['generated_at']!,
+          _generatedAtMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {targetPackage, targetVersion};
+  @override
+  VersionCompatibilityReportTableData map(
+    Map<String, dynamic> data, {
+    String? tablePrefix,
+  }) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return VersionCompatibilityReportTableData(
+      targetPackage:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}target_package'],
+          )!,
+      targetVersion:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}target_version'],
+          )!,
+      supportedDependentsCount:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}supported_dependents_count'],
+          )!,
+      totalDependentsCount:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}total_dependents_count'],
+          )!,
+      supportPercentage:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.double,
+            data['${effectivePrefix}support_percentage'],
+          )!,
+      generatedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}generated_at'],
+          )!,
+    );
+  }
+
+  @override
+  $VersionCompatibilityReportTableTable createAlias(String alias) {
+    return $VersionCompatibilityReportTableTable(attachedDatabase, alias);
+  }
+}
+
+class VersionCompatibilityReportTableData extends DataClass
+    implements Insertable<VersionCompatibilityReportTableData> {
+  /// Primary key - target package name
+  final String targetPackage;
+
+  /// Primary key - target package version
+  final String targetVersion;
+
+  /// Number of dependents that support this version
+  final int supportedDependentsCount;
+
+  /// Total number of dependents analyzed
+  final int totalDependentsCount;
+
+  /// Percentage of dependents that support this version (0-100)
+  final double supportPercentage;
+
+  /// When this report was generated
+  final DateTime generatedAt;
+  const VersionCompatibilityReportTableData({
+    required this.targetPackage,
+    required this.targetVersion,
+    required this.supportedDependentsCount,
+    required this.totalDependentsCount,
+    required this.supportPercentage,
+    required this.generatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['target_package'] = Variable<String>(targetPackage);
+    map['target_version'] = Variable<String>(targetVersion);
+    map['supported_dependents_count'] = Variable<int>(supportedDependentsCount);
+    map['total_dependents_count'] = Variable<int>(totalDependentsCount);
+    map['support_percentage'] = Variable<double>(supportPercentage);
+    map['generated_at'] = Variable<DateTime>(generatedAt);
+    return map;
+  }
+
+  VersionCompatibilityReportTableCompanion toCompanion(bool nullToAbsent) {
+    return VersionCompatibilityReportTableCompanion(
+      targetPackage: Value(targetPackage),
+      targetVersion: Value(targetVersion),
+      supportedDependentsCount: Value(supportedDependentsCount),
+      totalDependentsCount: Value(totalDependentsCount),
+      supportPercentage: Value(supportPercentage),
+      generatedAt: Value(generatedAt),
+    );
+  }
+
+  factory VersionCompatibilityReportTableData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return VersionCompatibilityReportTableData(
+      targetPackage: serializer.fromJson<String>(json['targetPackage']),
+      targetVersion: serializer.fromJson<String>(json['targetVersion']),
+      supportedDependentsCount: serializer.fromJson<int>(
+        json['supportedDependentsCount'],
+      ),
+      totalDependentsCount: serializer.fromJson<int>(
+        json['totalDependentsCount'],
+      ),
+      supportPercentage: serializer.fromJson<double>(json['supportPercentage']),
+      generatedAt: serializer.fromJson<DateTime>(json['generatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'targetPackage': serializer.toJson<String>(targetPackage),
+      'targetVersion': serializer.toJson<String>(targetVersion),
+      'supportedDependentsCount': serializer.toJson<int>(
+        supportedDependentsCount,
+      ),
+      'totalDependentsCount': serializer.toJson<int>(totalDependentsCount),
+      'supportPercentage': serializer.toJson<double>(supportPercentage),
+      'generatedAt': serializer.toJson<DateTime>(generatedAt),
+    };
+  }
+
+  VersionCompatibilityReportTableData copyWith({
+    String? targetPackage,
+    String? targetVersion,
+    int? supportedDependentsCount,
+    int? totalDependentsCount,
+    double? supportPercentage,
+    DateTime? generatedAt,
+  }) => VersionCompatibilityReportTableData(
+    targetPackage: targetPackage ?? this.targetPackage,
+    targetVersion: targetVersion ?? this.targetVersion,
+    supportedDependentsCount:
+        supportedDependentsCount ?? this.supportedDependentsCount,
+    totalDependentsCount: totalDependentsCount ?? this.totalDependentsCount,
+    supportPercentage: supportPercentage ?? this.supportPercentage,
+    generatedAt: generatedAt ?? this.generatedAt,
+  );
+  VersionCompatibilityReportTableData copyWithCompanion(
+    VersionCompatibilityReportTableCompanion data,
+  ) {
+    return VersionCompatibilityReportTableData(
+      targetPackage:
+          data.targetPackage.present
+              ? data.targetPackage.value
+              : this.targetPackage,
+      targetVersion:
+          data.targetVersion.present
+              ? data.targetVersion.value
+              : this.targetVersion,
+      supportedDependentsCount:
+          data.supportedDependentsCount.present
+              ? data.supportedDependentsCount.value
+              : this.supportedDependentsCount,
+      totalDependentsCount:
+          data.totalDependentsCount.present
+              ? data.totalDependentsCount.value
+              : this.totalDependentsCount,
+      supportPercentage:
+          data.supportPercentage.present
+              ? data.supportPercentage.value
+              : this.supportPercentage,
+      generatedAt:
+          data.generatedAt.present ? data.generatedAt.value : this.generatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('VersionCompatibilityReportTableData(')
+          ..write('targetPackage: $targetPackage, ')
+          ..write('targetVersion: $targetVersion, ')
+          ..write('supportedDependentsCount: $supportedDependentsCount, ')
+          ..write('totalDependentsCount: $totalDependentsCount, ')
+          ..write('supportPercentage: $supportPercentage, ')
+          ..write('generatedAt: $generatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    targetPackage,
+    targetVersion,
+    supportedDependentsCount,
+    totalDependentsCount,
+    supportPercentage,
+    generatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is VersionCompatibilityReportTableData &&
+          other.targetPackage == this.targetPackage &&
+          other.targetVersion == this.targetVersion &&
+          other.supportedDependentsCount == this.supportedDependentsCount &&
+          other.totalDependentsCount == this.totalDependentsCount &&
+          other.supportPercentage == this.supportPercentage &&
+          other.generatedAt == this.generatedAt);
+}
+
+class VersionCompatibilityReportTableCompanion
+    extends UpdateCompanion<VersionCompatibilityReportTableData> {
+  final Value<String> targetPackage;
+  final Value<String> targetVersion;
+  final Value<int> supportedDependentsCount;
+  final Value<int> totalDependentsCount;
+  final Value<double> supportPercentage;
+  final Value<DateTime> generatedAt;
+  final Value<int> rowid;
+  const VersionCompatibilityReportTableCompanion({
+    this.targetPackage = const Value.absent(),
+    this.targetVersion = const Value.absent(),
+    this.supportedDependentsCount = const Value.absent(),
+    this.totalDependentsCount = const Value.absent(),
+    this.supportPercentage = const Value.absent(),
+    this.generatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  VersionCompatibilityReportTableCompanion.insert({
+    required String targetPackage,
+    required String targetVersion,
+    required int supportedDependentsCount,
+    required int totalDependentsCount,
+    required double supportPercentage,
+    this.generatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : targetPackage = Value(targetPackage),
+       targetVersion = Value(targetVersion),
+       supportedDependentsCount = Value(supportedDependentsCount),
+       totalDependentsCount = Value(totalDependentsCount),
+       supportPercentage = Value(supportPercentage);
+  static Insertable<VersionCompatibilityReportTableData> custom({
+    Expression<String>? targetPackage,
+    Expression<String>? targetVersion,
+    Expression<int>? supportedDependentsCount,
+    Expression<int>? totalDependentsCount,
+    Expression<double>? supportPercentage,
+    Expression<DateTime>? generatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (targetPackage != null) 'target_package': targetPackage,
+      if (targetVersion != null) 'target_version': targetVersion,
+      if (supportedDependentsCount != null)
+        'supported_dependents_count': supportedDependentsCount,
+      if (totalDependentsCount != null)
+        'total_dependents_count': totalDependentsCount,
+      if (supportPercentage != null) 'support_percentage': supportPercentage,
+      if (generatedAt != null) 'generated_at': generatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  VersionCompatibilityReportTableCompanion copyWith({
+    Value<String>? targetPackage,
+    Value<String>? targetVersion,
+    Value<int>? supportedDependentsCount,
+    Value<int>? totalDependentsCount,
+    Value<double>? supportPercentage,
+    Value<DateTime>? generatedAt,
+    Value<int>? rowid,
+  }) {
+    return VersionCompatibilityReportTableCompanion(
+      targetPackage: targetPackage ?? this.targetPackage,
+      targetVersion: targetVersion ?? this.targetVersion,
+      supportedDependentsCount:
+          supportedDependentsCount ?? this.supportedDependentsCount,
+      totalDependentsCount: totalDependentsCount ?? this.totalDependentsCount,
+      supportPercentage: supportPercentage ?? this.supportPercentage,
+      generatedAt: generatedAt ?? this.generatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (targetPackage.present) {
+      map['target_package'] = Variable<String>(targetPackage.value);
+    }
+    if (targetVersion.present) {
+      map['target_version'] = Variable<String>(targetVersion.value);
+    }
+    if (supportedDependentsCount.present) {
+      map['supported_dependents_count'] = Variable<int>(
+        supportedDependentsCount.value,
+      );
+    }
+    if (totalDependentsCount.present) {
+      map['total_dependents_count'] = Variable<int>(totalDependentsCount.value);
+    }
+    if (supportPercentage.present) {
+      map['support_percentage'] = Variable<double>(supportPercentage.value);
+    }
+    if (generatedAt.present) {
+      map['generated_at'] = Variable<DateTime>(generatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('VersionCompatibilityReportTableCompanion(')
+          ..write('targetPackage: $targetPackage, ')
+          ..write('targetVersion: $targetVersion, ')
+          ..write('supportedDependentsCount: $supportedDependentsCount, ')
+          ..write('totalDependentsCount: $totalDependentsCount, ')
+          ..write('supportPercentage: $supportPercentage, ')
+          ..write('generatedAt: $generatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$PackageDatabase extends GeneratedDatabase {
   _$PackageDatabase(QueryExecutor e) : super(e);
   $PackageDatabaseManager get managers => $PackageDatabaseManager(this);
@@ -1735,6 +3183,12 @@ abstract class _$PackageDatabase extends GeneratedDatabase {
   );
   late final $PackageSearchStateTableTable packageSearchStateTable =
       $PackageSearchStateTableTable(this);
+  late final $TargetPackageVersionTableTable targetPackageVersionTable =
+      $TargetPackageVersionTableTable(this);
+  late final $DependentSupportedVersionTableTable
+  dependentSupportedVersionTable = $DependentSupportedVersionTableTable(this);
+  late final $VersionCompatibilityReportTableTable
+  versionCompatibilityReportTable = $VersionCompatibilityReportTableTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1742,6 +3196,9 @@ abstract class _$PackageDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     packageDataTable,
     packageSearchStateTable,
+    targetPackageVersionTable,
+    dependentSupportedVersionTable,
+    versionCompatibilityReportTable,
   ];
 }
 
@@ -2537,6 +3994,771 @@ typedef $$PackageSearchStateTableTableProcessedTableManager =
       PackageSearchStateTableData,
       PrefetchHooks Function()
     >;
+typedef $$TargetPackageVersionTableTableCreateCompanionBuilder =
+    TargetPackageVersionTableCompanion Function({
+      required String targetPackage,
+      required String version,
+      required int majorVersion,
+      required int minorVersion,
+      required int patchVersion,
+      required DateTime publishedDate,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+typedef $$TargetPackageVersionTableTableUpdateCompanionBuilder =
+    TargetPackageVersionTableCompanion Function({
+      Value<String> targetPackage,
+      Value<String> version,
+      Value<int> majorVersion,
+      Value<int> minorVersion,
+      Value<int> patchVersion,
+      Value<DateTime> publishedDate,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+class $$TargetPackageVersionTableTableFilterComposer
+    extends Composer<_$PackageDatabase, $TargetPackageVersionTableTable> {
+  $$TargetPackageVersionTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get targetPackage => $composableBuilder(
+    column: $table.targetPackage,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get majorVersion => $composableBuilder(
+    column: $table.majorVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get minorVersion => $composableBuilder(
+    column: $table.minorVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get patchVersion => $composableBuilder(
+    column: $table.patchVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get publishedDate => $composableBuilder(
+    column: $table.publishedDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$TargetPackageVersionTableTableOrderingComposer
+    extends Composer<_$PackageDatabase, $TargetPackageVersionTableTable> {
+  $$TargetPackageVersionTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get targetPackage => $composableBuilder(
+    column: $table.targetPackage,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get majorVersion => $composableBuilder(
+    column: $table.majorVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get minorVersion => $composableBuilder(
+    column: $table.minorVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get patchVersion => $composableBuilder(
+    column: $table.patchVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get publishedDate => $composableBuilder(
+    column: $table.publishedDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$TargetPackageVersionTableTableAnnotationComposer
+    extends Composer<_$PackageDatabase, $TargetPackageVersionTableTable> {
+  $$TargetPackageVersionTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get targetPackage => $composableBuilder(
+    column: $table.targetPackage,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<int> get majorVersion => $composableBuilder(
+    column: $table.majorVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get minorVersion => $composableBuilder(
+    column: $table.minorVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get patchVersion => $composableBuilder(
+    column: $table.patchVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get publishedDate => $composableBuilder(
+    column: $table.publishedDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$TargetPackageVersionTableTableTableManager
+    extends
+        RootTableManager<
+          _$PackageDatabase,
+          $TargetPackageVersionTableTable,
+          TargetPackageVersionTableData,
+          $$TargetPackageVersionTableTableFilterComposer,
+          $$TargetPackageVersionTableTableOrderingComposer,
+          $$TargetPackageVersionTableTableAnnotationComposer,
+          $$TargetPackageVersionTableTableCreateCompanionBuilder,
+          $$TargetPackageVersionTableTableUpdateCompanionBuilder,
+          (
+            TargetPackageVersionTableData,
+            BaseReferences<
+              _$PackageDatabase,
+              $TargetPackageVersionTableTable,
+              TargetPackageVersionTableData
+            >,
+          ),
+          TargetPackageVersionTableData,
+          PrefetchHooks Function()
+        > {
+  $$TargetPackageVersionTableTableTableManager(
+    _$PackageDatabase db,
+    $TargetPackageVersionTableTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$TargetPackageVersionTableTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer:
+              () => $$TargetPackageVersionTableTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer:
+              () => $$TargetPackageVersionTableTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> targetPackage = const Value.absent(),
+                Value<String> version = const Value.absent(),
+                Value<int> majorVersion = const Value.absent(),
+                Value<int> minorVersion = const Value.absent(),
+                Value<int> patchVersion = const Value.absent(),
+                Value<DateTime> publishedDate = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TargetPackageVersionTableCompanion(
+                targetPackage: targetPackage,
+                version: version,
+                majorVersion: majorVersion,
+                minorVersion: minorVersion,
+                patchVersion: patchVersion,
+                publishedDate: publishedDate,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String targetPackage,
+                required String version,
+                required int majorVersion,
+                required int minorVersion,
+                required int patchVersion,
+                required DateTime publishedDate,
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TargetPackageVersionTableCompanion.insert(
+                targetPackage: targetPackage,
+                version: version,
+                majorVersion: majorVersion,
+                minorVersion: minorVersion,
+                patchVersion: patchVersion,
+                publishedDate: publishedDate,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          BaseReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$TargetPackageVersionTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$PackageDatabase,
+      $TargetPackageVersionTableTable,
+      TargetPackageVersionTableData,
+      $$TargetPackageVersionTableTableFilterComposer,
+      $$TargetPackageVersionTableTableOrderingComposer,
+      $$TargetPackageVersionTableTableAnnotationComposer,
+      $$TargetPackageVersionTableTableCreateCompanionBuilder,
+      $$TargetPackageVersionTableTableUpdateCompanionBuilder,
+      (
+        TargetPackageVersionTableData,
+        BaseReferences<
+          _$PackageDatabase,
+          $TargetPackageVersionTableTable,
+          TargetPackageVersionTableData
+        >,
+      ),
+      TargetPackageVersionTableData,
+      PrefetchHooks Function()
+    >;
+typedef $$DependentSupportedVersionTableTableCreateCompanionBuilder =
+    DependentSupportedVersionTableCompanion Function({
+      required String dependentPackage,
+      required String targetPackage,
+      required String supportedVersion,
+      required String constraintString,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+typedef $$DependentSupportedVersionTableTableUpdateCompanionBuilder =
+    DependentSupportedVersionTableCompanion Function({
+      Value<String> dependentPackage,
+      Value<String> targetPackage,
+      Value<String> supportedVersion,
+      Value<String> constraintString,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+class $$DependentSupportedVersionTableTableFilterComposer
+    extends Composer<_$PackageDatabase, $DependentSupportedVersionTableTable> {
+  $$DependentSupportedVersionTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get dependentPackage => $composableBuilder(
+    column: $table.dependentPackage,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get targetPackage => $composableBuilder(
+    column: $table.targetPackage,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get supportedVersion => $composableBuilder(
+    column: $table.supportedVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get constraintString => $composableBuilder(
+    column: $table.constraintString,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$DependentSupportedVersionTableTableOrderingComposer
+    extends Composer<_$PackageDatabase, $DependentSupportedVersionTableTable> {
+  $$DependentSupportedVersionTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get dependentPackage => $composableBuilder(
+    column: $table.dependentPackage,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get targetPackage => $composableBuilder(
+    column: $table.targetPackage,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get supportedVersion => $composableBuilder(
+    column: $table.supportedVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get constraintString => $composableBuilder(
+    column: $table.constraintString,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$DependentSupportedVersionTableTableAnnotationComposer
+    extends Composer<_$PackageDatabase, $DependentSupportedVersionTableTable> {
+  $$DependentSupportedVersionTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get dependentPackage => $composableBuilder(
+    column: $table.dependentPackage,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get targetPackage => $composableBuilder(
+    column: $table.targetPackage,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get supportedVersion => $composableBuilder(
+    column: $table.supportedVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get constraintString => $composableBuilder(
+    column: $table.constraintString,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$DependentSupportedVersionTableTableTableManager
+    extends
+        RootTableManager<
+          _$PackageDatabase,
+          $DependentSupportedVersionTableTable,
+          DependentSupportedVersionTableData,
+          $$DependentSupportedVersionTableTableFilterComposer,
+          $$DependentSupportedVersionTableTableOrderingComposer,
+          $$DependentSupportedVersionTableTableAnnotationComposer,
+          $$DependentSupportedVersionTableTableCreateCompanionBuilder,
+          $$DependentSupportedVersionTableTableUpdateCompanionBuilder,
+          (
+            DependentSupportedVersionTableData,
+            BaseReferences<
+              _$PackageDatabase,
+              $DependentSupportedVersionTableTable,
+              DependentSupportedVersionTableData
+            >,
+          ),
+          DependentSupportedVersionTableData,
+          PrefetchHooks Function()
+        > {
+  $$DependentSupportedVersionTableTableTableManager(
+    _$PackageDatabase db,
+    $DependentSupportedVersionTableTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$DependentSupportedVersionTableTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer:
+              () => $$DependentSupportedVersionTableTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer:
+              () => $$DependentSupportedVersionTableTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> dependentPackage = const Value.absent(),
+                Value<String> targetPackage = const Value.absent(),
+                Value<String> supportedVersion = const Value.absent(),
+                Value<String> constraintString = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => DependentSupportedVersionTableCompanion(
+                dependentPackage: dependentPackage,
+                targetPackage: targetPackage,
+                supportedVersion: supportedVersion,
+                constraintString: constraintString,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String dependentPackage,
+                required String targetPackage,
+                required String supportedVersion,
+                required String constraintString,
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => DependentSupportedVersionTableCompanion.insert(
+                dependentPackage: dependentPackage,
+                targetPackage: targetPackage,
+                supportedVersion: supportedVersion,
+                constraintString: constraintString,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          BaseReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$DependentSupportedVersionTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$PackageDatabase,
+      $DependentSupportedVersionTableTable,
+      DependentSupportedVersionTableData,
+      $$DependentSupportedVersionTableTableFilterComposer,
+      $$DependentSupportedVersionTableTableOrderingComposer,
+      $$DependentSupportedVersionTableTableAnnotationComposer,
+      $$DependentSupportedVersionTableTableCreateCompanionBuilder,
+      $$DependentSupportedVersionTableTableUpdateCompanionBuilder,
+      (
+        DependentSupportedVersionTableData,
+        BaseReferences<
+          _$PackageDatabase,
+          $DependentSupportedVersionTableTable,
+          DependentSupportedVersionTableData
+        >,
+      ),
+      DependentSupportedVersionTableData,
+      PrefetchHooks Function()
+    >;
+typedef $$VersionCompatibilityReportTableTableCreateCompanionBuilder =
+    VersionCompatibilityReportTableCompanion Function({
+      required String targetPackage,
+      required String targetVersion,
+      required int supportedDependentsCount,
+      required int totalDependentsCount,
+      required double supportPercentage,
+      Value<DateTime> generatedAt,
+      Value<int> rowid,
+    });
+typedef $$VersionCompatibilityReportTableTableUpdateCompanionBuilder =
+    VersionCompatibilityReportTableCompanion Function({
+      Value<String> targetPackage,
+      Value<String> targetVersion,
+      Value<int> supportedDependentsCount,
+      Value<int> totalDependentsCount,
+      Value<double> supportPercentage,
+      Value<DateTime> generatedAt,
+      Value<int> rowid,
+    });
+
+class $$VersionCompatibilityReportTableTableFilterComposer
+    extends Composer<_$PackageDatabase, $VersionCompatibilityReportTableTable> {
+  $$VersionCompatibilityReportTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get targetPackage => $composableBuilder(
+    column: $table.targetPackage,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get targetVersion => $composableBuilder(
+    column: $table.targetVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get supportedDependentsCount => $composableBuilder(
+    column: $table.supportedDependentsCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get totalDependentsCount => $composableBuilder(
+    column: $table.totalDependentsCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get supportPercentage => $composableBuilder(
+    column: $table.supportPercentage,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get generatedAt => $composableBuilder(
+    column: $table.generatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$VersionCompatibilityReportTableTableOrderingComposer
+    extends Composer<_$PackageDatabase, $VersionCompatibilityReportTableTable> {
+  $$VersionCompatibilityReportTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get targetPackage => $composableBuilder(
+    column: $table.targetPackage,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get targetVersion => $composableBuilder(
+    column: $table.targetVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get supportedDependentsCount => $composableBuilder(
+    column: $table.supportedDependentsCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get totalDependentsCount => $composableBuilder(
+    column: $table.totalDependentsCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get supportPercentage => $composableBuilder(
+    column: $table.supportPercentage,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get generatedAt => $composableBuilder(
+    column: $table.generatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$VersionCompatibilityReportTableTableAnnotationComposer
+    extends Composer<_$PackageDatabase, $VersionCompatibilityReportTableTable> {
+  $$VersionCompatibilityReportTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get targetPackage => $composableBuilder(
+    column: $table.targetPackage,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get targetVersion => $composableBuilder(
+    column: $table.targetVersion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get supportedDependentsCount => $composableBuilder(
+    column: $table.supportedDependentsCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get totalDependentsCount => $composableBuilder(
+    column: $table.totalDependentsCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get supportPercentage => $composableBuilder(
+    column: $table.supportPercentage,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get generatedAt => $composableBuilder(
+    column: $table.generatedAt,
+    builder: (column) => column,
+  );
+}
+
+class $$VersionCompatibilityReportTableTableTableManager
+    extends
+        RootTableManager<
+          _$PackageDatabase,
+          $VersionCompatibilityReportTableTable,
+          VersionCompatibilityReportTableData,
+          $$VersionCompatibilityReportTableTableFilterComposer,
+          $$VersionCompatibilityReportTableTableOrderingComposer,
+          $$VersionCompatibilityReportTableTableAnnotationComposer,
+          $$VersionCompatibilityReportTableTableCreateCompanionBuilder,
+          $$VersionCompatibilityReportTableTableUpdateCompanionBuilder,
+          (
+            VersionCompatibilityReportTableData,
+            BaseReferences<
+              _$PackageDatabase,
+              $VersionCompatibilityReportTableTable,
+              VersionCompatibilityReportTableData
+            >,
+          ),
+          VersionCompatibilityReportTableData,
+          PrefetchHooks Function()
+        > {
+  $$VersionCompatibilityReportTableTableTableManager(
+    _$PackageDatabase db,
+    $VersionCompatibilityReportTableTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$VersionCompatibilityReportTableTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer:
+              () => $$VersionCompatibilityReportTableTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer:
+              () => $$VersionCompatibilityReportTableTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> targetPackage = const Value.absent(),
+                Value<String> targetVersion = const Value.absent(),
+                Value<int> supportedDependentsCount = const Value.absent(),
+                Value<int> totalDependentsCount = const Value.absent(),
+                Value<double> supportPercentage = const Value.absent(),
+                Value<DateTime> generatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => VersionCompatibilityReportTableCompanion(
+                targetPackage: targetPackage,
+                targetVersion: targetVersion,
+                supportedDependentsCount: supportedDependentsCount,
+                totalDependentsCount: totalDependentsCount,
+                supportPercentage: supportPercentage,
+                generatedAt: generatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String targetPackage,
+                required String targetVersion,
+                required int supportedDependentsCount,
+                required int totalDependentsCount,
+                required double supportPercentage,
+                Value<DateTime> generatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => VersionCompatibilityReportTableCompanion.insert(
+                targetPackage: targetPackage,
+                targetVersion: targetVersion,
+                supportedDependentsCount: supportedDependentsCount,
+                totalDependentsCount: totalDependentsCount,
+                supportPercentage: supportPercentage,
+                generatedAt: generatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          BaseReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$VersionCompatibilityReportTableTableProcessedTableManager =
+    ProcessedTableManager<
+      _$PackageDatabase,
+      $VersionCompatibilityReportTableTable,
+      VersionCompatibilityReportTableData,
+      $$VersionCompatibilityReportTableTableFilterComposer,
+      $$VersionCompatibilityReportTableTableOrderingComposer,
+      $$VersionCompatibilityReportTableTableAnnotationComposer,
+      $$VersionCompatibilityReportTableTableCreateCompanionBuilder,
+      $$VersionCompatibilityReportTableTableUpdateCompanionBuilder,
+      (
+        VersionCompatibilityReportTableData,
+        BaseReferences<
+          _$PackageDatabase,
+          $VersionCompatibilityReportTableTable,
+          VersionCompatibilityReportTableData
+        >,
+      ),
+      VersionCompatibilityReportTableData,
+      PrefetchHooks Function()
+    >;
 
 class $PackageDatabaseManager {
   final _$PackageDatabase _db;
@@ -2547,5 +4769,22 @@ class $PackageDatabaseManager {
       $$PackageSearchStateTableTableTableManager(
         _db,
         _db.packageSearchStateTable,
+      );
+  $$TargetPackageVersionTableTableTableManager get targetPackageVersionTable =>
+      $$TargetPackageVersionTableTableTableManager(
+        _db,
+        _db.targetPackageVersionTable,
+      );
+  $$DependentSupportedVersionTableTableTableManager
+  get dependentSupportedVersionTable =>
+      $$DependentSupportedVersionTableTableTableManager(
+        _db,
+        _db.dependentSupportedVersionTable,
+      );
+  $$VersionCompatibilityReportTableTableTableManager
+  get versionCompatibilityReportTable =>
+      $$VersionCompatibilityReportTableTableTableManager(
+        _db,
+        _db.versionCompatibilityReportTable,
       );
 }
