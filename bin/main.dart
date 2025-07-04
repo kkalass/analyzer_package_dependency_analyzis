@@ -53,8 +53,22 @@ void main(List<String> arguments) async {
         printUsage();
         return;
       }
-      final lastNMinorVersions = arguments.length > 2 ? int.tryParse(arguments[2]) ?? 10 : 10;
-      await generateVersionCompatibilityReport(arguments[1], lastNMinorVersions);
+      final lastNMinorVersions =
+          arguments.length > 2 ? int.tryParse(arguments[2]) ?? 10 : 10;
+      await generateVersionCompatibilityReport(
+        arguments[1],
+        lastNMinorVersions,
+      );
+      break;
+    case 'check-version':
+      if (arguments.length < 3) {
+        print(
+          'Error: target package and version are required for check-version command',
+        );
+        printUsage();
+        return;
+      }
+      await checkVersionSupport(arguments[1], arguments[2]);
       break;
     case 'help':
     case '--help':
@@ -90,6 +104,9 @@ void printUsage() {
   print(
     '  report <pkg> [n]  Generate version compatibility report for target package (last n minor versions, default: 10)',
   );
+  print(
+    '  check-version <pkg> <version>  List all dependents that support a specific version',
+  );
   print('  help           Show this help message');
   print('');
   print('Examples:');
@@ -99,6 +116,7 @@ void printUsage() {
   print('  dart run bin/main.dart csv');
   print('  dart run bin/main.dart status analyzer');
   print('  dart run bin/main.dart report analyzer 5');
+  print('  dart run bin/main.dart check-version analyzer 7.5.4');
 }
 
 /// Performs the fetch operation to get all packages with dependency on target package
@@ -779,7 +797,10 @@ Future<void> clearSearchState(String targetPackage) async {
 }
 
 /// Generates version compatibility report
-Future<void> generateVersionCompatibilityReport(String targetPackage, int lastNMinorVersions) async {
+Future<void> generateVersionCompatibilityReport(
+  String targetPackage,
+  int lastNMinorVersions,
+) async {
   final service = PackageDataService.create();
   final client = PubClient();
   final versionAnalysisService = VersionAnalysisService(service, client);
@@ -798,15 +819,18 @@ Future<void> generateVersionCompatibilityReport(String targetPackage, int lastNM
 
     // Step 3: Generate compatibility report
     print('📊 Step 3: Generating compatibility report...');
-    await versionAnalysisService.generateVersionCompatibilityReport(targetPackage, lastNMinorVersions);
+    await versionAnalysisService.generateVersionCompatibilityReport(
+      targetPackage,
+      lastNMinorVersions,
+    );
 
     // Step 4: Display report
     print('');
     print('📈 Version Compatibility Report for "$targetPackage"');
     print('=' * 60);
-    
+
     final reports = await service.getVersionCompatibilityReports(targetPackage);
-    
+
     if (reports.isEmpty) {
       print('No version compatibility data found.');
       return;
@@ -815,44 +839,117 @@ Future<void> generateVersionCompatibilityReport(String targetPackage, int lastNM
     print('');
     print('| Version | Supported Dependents | Total Dependents | Support % |');
     print('|---------|---------------------|------------------|-----------|');
-    
+
     for (final report in reports) {
       final version = report.targetVersion.padRight(8);
       final supported = report.supportedDependentsCount.toString().padLeft(8);
       final total = report.totalDependentsCount.toString().padLeft(8);
-      final percentage = '${report.supportPercentage.toStringAsFixed(1)}%'.padLeft(8);
-      
+      final percentage = '${report.supportPercentage.toStringAsFixed(1)}%'
+          .padLeft(8);
+
       print('| $version | $supported | $total | $percentage |');
     }
-    
+
     print('');
     print('✅ Report generated successfully!');
     print('');
-    
+
     // Additional insights
     if (reports.isNotEmpty) {
-      final mostSupported = reports.reduce((a, b) => 
-        a.supportedDependentsCount > b.supportedDependentsCount ? a : b
+      final mostSupported = reports.reduce(
+        (a, b) =>
+            a.supportedDependentsCount > b.supportedDependentsCount ? a : b,
       );
-      final highestPercentage = reports.reduce((a, b) => 
-        a.supportPercentage > b.supportPercentage ? a : b
+      final highestPercentage = reports.reduce(
+        (a, b) => a.supportPercentage > b.supportPercentage ? a : b,
       );
-      
-      print('💡 Insights:');
-      print('  • Most supported version: ${mostSupported.targetVersion} (${mostSupported.supportedDependentsCount} dependents)');
-      print('  • Highest percentage: ${highestPercentage.targetVersion} (${highestPercentage.supportPercentage.toStringAsFixed(1)}%)');
-      
-      final totalDependents = reports.first.totalDependentsCount;
-      final avgSupport = reports.map((r) => r.supportPercentage).reduce((a, b) => a + b) / reports.length;
-      print('  • Total dependents analyzed: $totalDependents');
-      print('  • Average support across versions: ${avgSupport.toStringAsFixed(1)}%');
-    }
 
+      print('💡 Insights:');
+      print(
+        '  • Most supported version: ${mostSupported.targetVersion} (${mostSupported.supportedDependentsCount} dependents)',
+      );
+      print(
+        '  • Highest percentage: ${highestPercentage.targetVersion} (${highestPercentage.supportPercentage.toStringAsFixed(1)}%)',
+      );
+
+      final totalDependents = reports.first.totalDependentsCount;
+      final avgSupport =
+          reports.map((r) => r.supportPercentage).reduce((a, b) => a + b) /
+          reports.length;
+      print('  • Total dependents analyzed: $totalDependents');
+      print(
+        '  • Average support across versions: ${avgSupport.toStringAsFixed(1)}%',
+      );
+    }
   } catch (e) {
     print('❌ Error generating report: $e');
     rethrow;
   } finally {
     await service.close();
     client.close();
+  }
+}
+
+/// Checks which dependents support a specific version
+Future<void> checkVersionSupport(String targetPackage, String version) async {
+  final service = PackageDataService.create();
+
+  try {
+    print(
+      '🔍 Checking dependents that support $targetPackage version $version...',
+    );
+
+    // Get all dependents that support this version
+    final supportingDependents = await service
+        .getDependentsSupportingVersionWithConstraints(targetPackage, version);
+
+    if (supportingDependents.isEmpty) {
+      print('❌ No dependents found that support version $version');
+      print('This could mean:');
+      print('  • The version compatibility analysis hasn\'t been run yet');
+      print('  • No dependents actually support this version');
+      print('  • The version doesn\'t exist');
+      return;
+    }
+
+    print(
+      '✅ Found ${supportingDependents.length} dependents that support version $version:',
+    );
+    print('');
+
+    // Sort by dependent package name for consistent output
+    supportingDependents.sort(
+      (a, b) => a.dependentPackage.compareTo(b.dependentPackage),
+    );
+
+    for (final dependent in supportingDependents) {
+      print('  📦 ${dependent.dependentPackage}');
+      print('    └── Constraint: ${dependent.constraintString}');
+    }
+
+    print('');
+    print(
+      'Total: ${supportingDependents.length} dependents support $targetPackage version $version',
+    );
+
+    // Additional debugging: show the raw constraint strings
+    final uniqueConstraints =
+        supportingDependents.map((d) => d.constraintString).toSet().toList()
+          ..sort();
+
+    print('');
+    print('Unique constraint patterns found:');
+    for (final constraint in uniqueConstraints) {
+      final count =
+          supportingDependents
+              .where((d) => d.constraintString == constraint)
+              .length;
+      print('  • "$constraint" (used by $count packages)');
+    }
+  } catch (e) {
+    print('❌ Error checking version support: $e');
+    rethrow;
+  } finally {
+    await service.close();
   }
 }
