@@ -74,6 +74,21 @@ class PackageDataTable extends Table {
   /// Repository URL
   TextColumn get repoUrl => text().nullable()();
 
+  /// Download count for the last 30 days
+  IntColumn get downloadCount30Days => integer().nullable()();
+
+  /// Number of likes for the package
+  IntColumn get likeCount => integer().nullable()();
+
+  /// Granted points from pub.dev scoring
+  IntColumn get grantedPoints => integer().nullable()();
+
+  /// Popularity score from pub.dev
+  RealColumn get popularityScore => real().nullable()();
+
+  /// Maximum points possible in scoring
+  IntColumn get maxPoints => integer().nullable()();
+
   /// Timestamp when this record was created
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 
@@ -90,7 +105,7 @@ class PackageDatabase extends _$PackageDatabase {
   PackageDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -105,6 +120,11 @@ class PackageDatabase extends _$PackageDatabase {
         // For simplicity, we'll recreate the table with new schema
         await m.drop(packageSearchStateTable);
         await m.createTable(packageSearchStateTable);
+      }
+      if (from < 4) {
+        // Recreate the package data table with new columns
+        await m.drop(packageDataTable);
+        await m.createTable(packageDataTable);
       }
     },
   );

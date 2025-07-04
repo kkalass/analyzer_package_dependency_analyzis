@@ -1,7 +1,7 @@
-
 import 'package:console/database.dart';
 import 'package:console/package_data_service.dart';
 import 'package:http/http.dart' as http;
+import 'package:pub_api_client/pub_api_client.dart';
 import 'package:yaml/yaml.dart';
 
 /// Simple model for serializing package names for persistence
@@ -26,6 +26,11 @@ class PackageData {
   final DateTime? publishedDate;
   final String? publishedVersion;
   final String? repoUrl;
+  final int? downloadCount30Days;
+  final int? likeCount;
+  final int? grantedPoints;
+  final double? popularityScore;
+  final int? maxPoints;
 
   PackageData({
     required this.packageName,
@@ -35,6 +40,11 @@ class PackageData {
     required this.publishedDate,
     required this.repoUrl,
     required this.publishedVersion,
+    required this.downloadCount30Days,
+    required this.likeCount,
+    required this.grantedPoints,
+    required this.popularityScore,
+    required this.maxPoints,
   });
 }
 
@@ -42,27 +52,120 @@ class PubspecInfo {
   final String version;
   final String? analyzerVersion;
 
-  PubspecInfo({required this.version, required this.analyzerVersion});
+  PubspecInfo({required this.version, this.analyzerVersion});
 }
 
-Future<PackageData?> fetchPackageData(client, String packageName) async {
+Future<PackageData?> fetchPackageData(
+  PubClient client,
+  String packageName,
+) async {
   final details = await client.packageInfo(packageName);
   final publishedDate = details.latest.published;
   final publishedVersion = details.latest.version;
   final info = await client.packageMetrics(packageName);
   var repoUrl = info?.scorecard.panaReport?.result?.repositoryUrl;
 
-  final pubspecInfo =
-      repoUrl == null ? null : await downloadAndExtractAnalyzerVersion(repoUrl);
+  // Extract analyzer version and package version from latestPubspec
+  final pubspecInfo = extractPubspecInfo(details.latestPubspec);
+
+  // Extract additional metrics from the API response
+  final downloadCount30Days = info?.score.downloadCount30Days;
+  final likeCount = info?.score.likeCount;
+  final grantedPoints = info?.score.grantedPoints;
+  final popularityScore = info?.score.popularityScore;
+  final maxPoints = info?.score.maxPoints;
+
+  // Use published date as devDate since it represents when the package was last updated
+  final devDate = details.latest.published;
+
   return PackageData(
     packageName: packageName,
     devAnalyzerVersion: pubspecInfo?.analyzerVersion,
     devVersion: pubspecInfo?.version,
-    devDate: DateTime.now(),
+    devDate: devDate,
     publishedDate: publishedDate,
     publishedVersion: publishedVersion,
     repoUrl: repoUrl,
+    downloadCount30Days: downloadCount30Days,
+    likeCount: likeCount,
+    grantedPoints: grantedPoints,
+    popularityScore: popularityScore,
+    maxPoints: maxPoints,
   );
+}
+
+/// Extracts analyzer version and package version from pubspec data
+///
+/// Parses the pubspec data from the pub.dev API response to extract
+/// the analyzer package version from dependencies or dev_dependencies.
+PubspecInfo? extractPubspecInfo(dynamic pubspecData) {
+  if (pubspecData == null) return null;
+
+  try {
+    // Handle different types of pubspec data
+    Map<String, dynamic>? pubspecMap;
+
+    if (pubspecData is Map<String, dynamic>) {
+      pubspecMap = pubspecData;
+    } else if (pubspecData is Map<dynamic, dynamic>) {
+      pubspecMap = Map<String, dynamic>.from(pubspecData);
+    } else if (pubspecData.runtimeType.toString().contains('Pubspec')) {
+      // If it's a Pubspec object, try to access its properties
+      final version = pubspecData.version?.toString() ?? 'unknown';
+
+      // Try to access dependencies
+      String? analyzerVersion;
+      try {
+        final dependencies = pubspecData.dependencies;
+        if (dependencies != null && dependencies.containsKey('analyzer')) {
+          analyzerVersion = dependencies['analyzer'].toString();
+        }
+      } catch (e) {
+        // Ignore error and try dev_dependencies
+      }
+
+      // Try dev_dependencies if not found in dependencies
+      if (analyzerVersion == null) {
+        try {
+          final devDependencies = pubspecData.devDependencies;
+          if (devDependencies != null &&
+              devDependencies.containsKey('analyzer')) {
+            analyzerVersion = devDependencies['analyzer'].toString();
+          }
+        } catch (e) {
+          // Ignore error
+        }
+      }
+
+      return PubspecInfo(version: version, analyzerVersion: analyzerVersion);
+    }
+
+    if (pubspecMap == null) return null;
+
+    // Check dependencies section for analyzer
+    String? analyzerVersion;
+    final dependencies = pubspecMap['dependencies'] as Map<String, dynamic>?;
+    if (dependencies?.containsKey('analyzer') == true) {
+      analyzerVersion = dependencies!['analyzer'].toString();
+    }
+
+    // Check dev_dependencies section if not found in dependencies
+    if (analyzerVersion == null) {
+      final devDependencies =
+          pubspecMap['dev_dependencies'] as Map<String, dynamic>?;
+      if (devDependencies?.containsKey('analyzer') == true) {
+        analyzerVersion = devDependencies!['analyzer'].toString();
+      }
+    }
+
+    // Extract version from pubspec
+    final version = pubspecMap['version']?.toString() ?? 'unknown';
+
+    return PubspecInfo(version: version, analyzerVersion: analyzerVersion);
+  } catch (e) {
+    print('Error parsing pubspec data: $e');
+    return null;
+  }
 }
 
 /// Downloads pubspec.yaml from the repository URL and extracts the analyzer package version
@@ -222,6 +325,11 @@ Future<PackageData?> fetchAndStorePackageData(
         publishedDate: packageData.publishedDate,
         publishedVersion: packageData.publishedVersion,
         repoUrl: packageData.repoUrl,
+        downloadCount30Days: packageData.downloadCount30Days,
+        likeCount: packageData.likeCount,
+        grantedPoints: packageData.grantedPoints,
+        popularityScore: packageData.popularityScore,
+        maxPoints: packageData.maxPoints,
       );
 
       print('Package data stored in database for: ${packageData.packageName}');

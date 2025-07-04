@@ -18,6 +18,11 @@ void main() {
           publishedDate: DateTime.now().subtract(const Duration(days: 1)),
           publishedVersion: '1.9.0',
           repoUrl: 'https://github.com/test/repo',
+          downloadCount30Days: 1000,
+          likeCount: 50,
+          grantedPoints: 120,
+          popularityScore: 0.85,
+          maxPoints: 140,
         );
 
         // Create service and store data
@@ -32,6 +37,11 @@ void main() {
             publishedDate: packageData.publishedDate,
             publishedVersion: packageData.publishedVersion,
             repoUrl: packageData.repoUrl,
+            downloadCount30Days: packageData.downloadCount30Days,
+            likeCount: packageData.likeCount,
+            grantedPoints: packageData.grantedPoints,
+            popularityScore: packageData.popularityScore,
+            maxPoints: packageData.maxPoints,
           );
 
           // Retrieve data using convenience function

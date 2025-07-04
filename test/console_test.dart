@@ -141,4 +141,62 @@ dependencies:
       expect(result.version, equals('1.2.3'));
     });
   });
+
+  group('PubspecInfo extraction tests', () {
+    test('extracts analyzer version from Map-based pubspec data', () {
+      final pubspecData = {
+        'name': 'example_package',
+        'version': '1.0.0',
+        'dependencies': {'analyzer': '^6.2.0'},
+      };
+
+      final result = extractPubspecInfo(pubspecData);
+
+      expect(result, isNotNull);
+      expect(result!.version, equals('1.0.0'));
+      expect(result.analyzerVersion, equals('^6.2.0'));
+    });
+
+    test('extracts analyzer version from dev_dependencies section', () {
+      final pubspecData = {
+        'name': 'example_package',
+        'version': '1.0.0',
+        'dev_dependencies': {'analyzer': '^6.2.0'},
+      };
+
+      final result = extractPubspecInfo(pubspecData);
+
+      expect(result, isNotNull);
+      expect(result!.version, equals('1.0.0'));
+      expect(result.analyzerVersion, equals('^6.2.0'));
+    });
+
+    test('returns null when no analyzer dependency is found', () {
+      final pubspecData = {
+        'name': 'example_package',
+        'version': '1.0.0',
+        'dependencies': {'http': '^0.13.0'},
+      };
+
+      final result = extractPubspecInfo(pubspecData);
+
+      expect(result, isNotNull);
+      expect(result!.version, equals('1.0.0'));
+      expect(result.analyzerVersion, isNull);
+    });
+
+    test('handles null pubspec data gracefully', () {
+      final result = extractPubspecInfo(null);
+
+      expect(result, isNull);
+    });
+
+    test('handles empty pubspec data gracefully', () {
+      final result = extractPubspecInfo({});
+
+      expect(result, isNotNull);
+      expect(result!.version, equals('unknown'));
+      expect(result.analyzerVersion, isNull);
+    });
+  });
 }

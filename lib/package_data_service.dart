@@ -27,6 +27,11 @@ class PackageDataService {
     DateTime? publishedDate,
     String? publishedVersion,
     String? repoUrl,
+    int? downloadCount30Days,
+    int? likeCount,
+    int? grantedPoints,
+    double? popularityScore,
+    int? maxPoints,
   }) async {
     final companion = PackageDataTableCompanion(
       packageName: Value(packageName),
@@ -36,6 +41,11 @@ class PackageDataService {
       publishedDate: Value(publishedDate),
       publishedVersion: Value(publishedVersion),
       repoUrl: Value(repoUrl),
+      downloadCount30Days: Value(downloadCount30Days),
+      likeCount: Value(likeCount),
+      grantedPoints: Value(grantedPoints),
+      popularityScore: Value(popularityScore),
+      maxPoints: Value(maxPoints),
       updatedAt: Value(DateTime.now()),
     );
 

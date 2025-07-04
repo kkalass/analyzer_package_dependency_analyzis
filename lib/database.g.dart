@@ -87,6 +87,60 @@ class $PackageDataTableTable extends PackageDataTable
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _downloadCount30DaysMeta =
+      const VerificationMeta('downloadCount30Days');
+  @override
+  late final GeneratedColumn<int> downloadCount30Days = GeneratedColumn<int>(
+    'download_count30_days',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _likeCountMeta = const VerificationMeta(
+    'likeCount',
+  );
+  @override
+  late final GeneratedColumn<int> likeCount = GeneratedColumn<int>(
+    'like_count',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _grantedPointsMeta = const VerificationMeta(
+    'grantedPoints',
+  );
+  @override
+  late final GeneratedColumn<int> grantedPoints = GeneratedColumn<int>(
+    'granted_points',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _popularityScoreMeta = const VerificationMeta(
+    'popularityScore',
+  );
+  @override
+  late final GeneratedColumn<double> popularityScore = GeneratedColumn<double>(
+    'popularity_score',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _maxPointsMeta = const VerificationMeta(
+    'maxPoints',
+  );
+  @override
+  late final GeneratedColumn<int> maxPoints = GeneratedColumn<int>(
+    'max_points',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -120,6 +174,11 @@ class $PackageDataTableTable extends PackageDataTable
     publishedDate,
     publishedVersion,
     repoUrl,
+    downloadCount30Days,
+    likeCount,
+    grantedPoints,
+    popularityScore,
+    maxPoints,
     createdAt,
     updatedAt,
   ];
@@ -193,6 +252,45 @@ class $PackageDataTableTable extends PackageDataTable
         repoUrl.isAcceptableOrUnknown(data['repo_url']!, _repoUrlMeta),
       );
     }
+    if (data.containsKey('download_count30_days')) {
+      context.handle(
+        _downloadCount30DaysMeta,
+        downloadCount30Days.isAcceptableOrUnknown(
+          data['download_count30_days']!,
+          _downloadCount30DaysMeta,
+        ),
+      );
+    }
+    if (data.containsKey('like_count')) {
+      context.handle(
+        _likeCountMeta,
+        likeCount.isAcceptableOrUnknown(data['like_count']!, _likeCountMeta),
+      );
+    }
+    if (data.containsKey('granted_points')) {
+      context.handle(
+        _grantedPointsMeta,
+        grantedPoints.isAcceptableOrUnknown(
+          data['granted_points']!,
+          _grantedPointsMeta,
+        ),
+      );
+    }
+    if (data.containsKey('popularity_score')) {
+      context.handle(
+        _popularityScoreMeta,
+        popularityScore.isAcceptableOrUnknown(
+          data['popularity_score']!,
+          _popularityScoreMeta,
+        ),
+      );
+    }
+    if (data.containsKey('max_points')) {
+      context.handle(
+        _maxPointsMeta,
+        maxPoints.isAcceptableOrUnknown(data['max_points']!, _maxPointsMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -244,6 +342,26 @@ class $PackageDataTableTable extends PackageDataTable
         DriftSqlType.string,
         data['${effectivePrefix}repo_url'],
       ),
+      downloadCount30Days: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}download_count30_days'],
+      ),
+      likeCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}like_count'],
+      ),
+      grantedPoints: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}granted_points'],
+      ),
+      popularityScore: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}popularity_score'],
+      ),
+      maxPoints: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}max_points'],
+      ),
       createdAt:
           attachedDatabase.typeMapping.read(
             DriftSqlType.dateTime,
@@ -286,6 +404,21 @@ class PackageDataTableData extends DataClass
   /// Repository URL
   final String? repoUrl;
 
+  /// Download count for the last 30 days
+  final int? downloadCount30Days;
+
+  /// Number of likes for the package
+  final int? likeCount;
+
+  /// Granted points from pub.dev scoring
+  final int? grantedPoints;
+
+  /// Popularity score from pub.dev
+  final double? popularityScore;
+
+  /// Maximum points possible in scoring
+  final int? maxPoints;
+
   /// Timestamp when this record was created
   final DateTime createdAt;
 
@@ -299,6 +432,11 @@ class PackageDataTableData extends DataClass
     this.publishedDate,
     this.publishedVersion,
     this.repoUrl,
+    this.downloadCount30Days,
+    this.likeCount,
+    this.grantedPoints,
+    this.popularityScore,
+    this.maxPoints,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -321,6 +459,21 @@ class PackageDataTableData extends DataClass
     }
     if (!nullToAbsent || repoUrl != null) {
       map['repo_url'] = Variable<String>(repoUrl);
+    }
+    if (!nullToAbsent || downloadCount30Days != null) {
+      map['download_count30_days'] = Variable<int>(downloadCount30Days);
+    }
+    if (!nullToAbsent || likeCount != null) {
+      map['like_count'] = Variable<int>(likeCount);
+    }
+    if (!nullToAbsent || grantedPoints != null) {
+      map['granted_points'] = Variable<int>(grantedPoints);
+    }
+    if (!nullToAbsent || popularityScore != null) {
+      map['popularity_score'] = Variable<double>(popularityScore);
+    }
+    if (!nullToAbsent || maxPoints != null) {
+      map['max_points'] = Variable<int>(maxPoints);
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -351,6 +504,26 @@ class PackageDataTableData extends DataClass
           repoUrl == null && nullToAbsent
               ? const Value.absent()
               : Value(repoUrl),
+      downloadCount30Days:
+          downloadCount30Days == null && nullToAbsent
+              ? const Value.absent()
+              : Value(downloadCount30Days),
+      likeCount:
+          likeCount == null && nullToAbsent
+              ? const Value.absent()
+              : Value(likeCount),
+      grantedPoints:
+          grantedPoints == null && nullToAbsent
+              ? const Value.absent()
+              : Value(grantedPoints),
+      popularityScore:
+          popularityScore == null && nullToAbsent
+              ? const Value.absent()
+              : Value(popularityScore),
+      maxPoints:
+          maxPoints == null && nullToAbsent
+              ? const Value.absent()
+              : Value(maxPoints),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -371,6 +544,13 @@ class PackageDataTableData extends DataClass
       publishedDate: serializer.fromJson<DateTime?>(json['publishedDate']),
       publishedVersion: serializer.fromJson<String?>(json['publishedVersion']),
       repoUrl: serializer.fromJson<String?>(json['repoUrl']),
+      downloadCount30Days: serializer.fromJson<int?>(
+        json['downloadCount30Days'],
+      ),
+      likeCount: serializer.fromJson<int?>(json['likeCount']),
+      grantedPoints: serializer.fromJson<int?>(json['grantedPoints']),
+      popularityScore: serializer.fromJson<double?>(json['popularityScore']),
+      maxPoints: serializer.fromJson<int?>(json['maxPoints']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -386,6 +566,11 @@ class PackageDataTableData extends DataClass
       'publishedDate': serializer.toJson<DateTime?>(publishedDate),
       'publishedVersion': serializer.toJson<String?>(publishedVersion),
       'repoUrl': serializer.toJson<String?>(repoUrl),
+      'downloadCount30Days': serializer.toJson<int?>(downloadCount30Days),
+      'likeCount': serializer.toJson<int?>(likeCount),
+      'grantedPoints': serializer.toJson<int?>(grantedPoints),
+      'popularityScore': serializer.toJson<double?>(popularityScore),
+      'maxPoints': serializer.toJson<int?>(maxPoints),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -399,6 +584,11 @@ class PackageDataTableData extends DataClass
     Value<DateTime?> publishedDate = const Value.absent(),
     Value<String?> publishedVersion = const Value.absent(),
     Value<String?> repoUrl = const Value.absent(),
+    Value<int?> downloadCount30Days = const Value.absent(),
+    Value<int?> likeCount = const Value.absent(),
+    Value<int?> grantedPoints = const Value.absent(),
+    Value<double?> popularityScore = const Value.absent(),
+    Value<int?> maxPoints = const Value.absent(),
     DateTime? createdAt,
     DateTime? updatedAt,
   }) => PackageDataTableData(
@@ -416,6 +606,16 @@ class PackageDataTableData extends DataClass
             ? publishedVersion.value
             : this.publishedVersion,
     repoUrl: repoUrl.present ? repoUrl.value : this.repoUrl,
+    downloadCount30Days:
+        downloadCount30Days.present
+            ? downloadCount30Days.value
+            : this.downloadCount30Days,
+    likeCount: likeCount.present ? likeCount.value : this.likeCount,
+    grantedPoints:
+        grantedPoints.present ? grantedPoints.value : this.grantedPoints,
+    popularityScore:
+        popularityScore.present ? popularityScore.value : this.popularityScore,
+    maxPoints: maxPoints.present ? maxPoints.value : this.maxPoints,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt ?? this.updatedAt,
   );
@@ -439,6 +639,20 @@ class PackageDataTableData extends DataClass
               ? data.publishedVersion.value
               : this.publishedVersion,
       repoUrl: data.repoUrl.present ? data.repoUrl.value : this.repoUrl,
+      downloadCount30Days:
+          data.downloadCount30Days.present
+              ? data.downloadCount30Days.value
+              : this.downloadCount30Days,
+      likeCount: data.likeCount.present ? data.likeCount.value : this.likeCount,
+      grantedPoints:
+          data.grantedPoints.present
+              ? data.grantedPoints.value
+              : this.grantedPoints,
+      popularityScore:
+          data.popularityScore.present
+              ? data.popularityScore.value
+              : this.popularityScore,
+      maxPoints: data.maxPoints.present ? data.maxPoints.value : this.maxPoints,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -454,6 +668,11 @@ class PackageDataTableData extends DataClass
           ..write('publishedDate: $publishedDate, ')
           ..write('publishedVersion: $publishedVersion, ')
           ..write('repoUrl: $repoUrl, ')
+          ..write('downloadCount30Days: $downloadCount30Days, ')
+          ..write('likeCount: $likeCount, ')
+          ..write('grantedPoints: $grantedPoints, ')
+          ..write('popularityScore: $popularityScore, ')
+          ..write('maxPoints: $maxPoints, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -469,6 +688,11 @@ class PackageDataTableData extends DataClass
     publishedDate,
     publishedVersion,
     repoUrl,
+    downloadCount30Days,
+    likeCount,
+    grantedPoints,
+    popularityScore,
+    maxPoints,
     createdAt,
     updatedAt,
   );
@@ -483,6 +707,11 @@ class PackageDataTableData extends DataClass
           other.publishedDate == this.publishedDate &&
           other.publishedVersion == this.publishedVersion &&
           other.repoUrl == this.repoUrl &&
+          other.downloadCount30Days == this.downloadCount30Days &&
+          other.likeCount == this.likeCount &&
+          other.grantedPoints == this.grantedPoints &&
+          other.popularityScore == this.popularityScore &&
+          other.maxPoints == this.maxPoints &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -495,6 +724,11 @@ class PackageDataTableCompanion extends UpdateCompanion<PackageDataTableData> {
   final Value<DateTime?> publishedDate;
   final Value<String?> publishedVersion;
   final Value<String?> repoUrl;
+  final Value<int?> downloadCount30Days;
+  final Value<int?> likeCount;
+  final Value<int?> grantedPoints;
+  final Value<double?> popularityScore;
+  final Value<int?> maxPoints;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<int> rowid;
@@ -506,6 +740,11 @@ class PackageDataTableCompanion extends UpdateCompanion<PackageDataTableData> {
     this.publishedDate = const Value.absent(),
     this.publishedVersion = const Value.absent(),
     this.repoUrl = const Value.absent(),
+    this.downloadCount30Days = const Value.absent(),
+    this.likeCount = const Value.absent(),
+    this.grantedPoints = const Value.absent(),
+    this.popularityScore = const Value.absent(),
+    this.maxPoints = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -518,6 +757,11 @@ class PackageDataTableCompanion extends UpdateCompanion<PackageDataTableData> {
     this.publishedDate = const Value.absent(),
     this.publishedVersion = const Value.absent(),
     this.repoUrl = const Value.absent(),
+    this.downloadCount30Days = const Value.absent(),
+    this.likeCount = const Value.absent(),
+    this.grantedPoints = const Value.absent(),
+    this.popularityScore = const Value.absent(),
+    this.maxPoints = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -531,6 +775,11 @@ class PackageDataTableCompanion extends UpdateCompanion<PackageDataTableData> {
     Expression<DateTime>? publishedDate,
     Expression<String>? publishedVersion,
     Expression<String>? repoUrl,
+    Expression<int>? downloadCount30Days,
+    Expression<int>? likeCount,
+    Expression<int>? grantedPoints,
+    Expression<double>? popularityScore,
+    Expression<int>? maxPoints,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -544,6 +793,12 @@ class PackageDataTableCompanion extends UpdateCompanion<PackageDataTableData> {
       if (publishedDate != null) 'published_date': publishedDate,
       if (publishedVersion != null) 'published_version': publishedVersion,
       if (repoUrl != null) 'repo_url': repoUrl,
+      if (downloadCount30Days != null)
+        'download_count30_days': downloadCount30Days,
+      if (likeCount != null) 'like_count': likeCount,
+      if (grantedPoints != null) 'granted_points': grantedPoints,
+      if (popularityScore != null) 'popularity_score': popularityScore,
+      if (maxPoints != null) 'max_points': maxPoints,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -558,6 +813,11 @@ class PackageDataTableCompanion extends UpdateCompanion<PackageDataTableData> {
     Value<DateTime?>? publishedDate,
     Value<String?>? publishedVersion,
     Value<String?>? repoUrl,
+    Value<int?>? downloadCount30Days,
+    Value<int?>? likeCount,
+    Value<int?>? grantedPoints,
+    Value<double?>? popularityScore,
+    Value<int?>? maxPoints,
     Value<DateTime>? createdAt,
     Value<DateTime>? updatedAt,
     Value<int>? rowid,
@@ -570,6 +830,11 @@ class PackageDataTableCompanion extends UpdateCompanion<PackageDataTableData> {
       publishedDate: publishedDate ?? this.publishedDate,
       publishedVersion: publishedVersion ?? this.publishedVersion,
       repoUrl: repoUrl ?? this.repoUrl,
+      downloadCount30Days: downloadCount30Days ?? this.downloadCount30Days,
+      likeCount: likeCount ?? this.likeCount,
+      grantedPoints: grantedPoints ?? this.grantedPoints,
+      popularityScore: popularityScore ?? this.popularityScore,
+      maxPoints: maxPoints ?? this.maxPoints,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -600,6 +865,21 @@ class PackageDataTableCompanion extends UpdateCompanion<PackageDataTableData> {
     if (repoUrl.present) {
       map['repo_url'] = Variable<String>(repoUrl.value);
     }
+    if (downloadCount30Days.present) {
+      map['download_count30_days'] = Variable<int>(downloadCount30Days.value);
+    }
+    if (likeCount.present) {
+      map['like_count'] = Variable<int>(likeCount.value);
+    }
+    if (grantedPoints.present) {
+      map['granted_points'] = Variable<int>(grantedPoints.value);
+    }
+    if (popularityScore.present) {
+      map['popularity_score'] = Variable<double>(popularityScore.value);
+    }
+    if (maxPoints.present) {
+      map['max_points'] = Variable<int>(maxPoints.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -622,6 +902,11 @@ class PackageDataTableCompanion extends UpdateCompanion<PackageDataTableData> {
           ..write('publishedDate: $publishedDate, ')
           ..write('publishedVersion: $publishedVersion, ')
           ..write('repoUrl: $repoUrl, ')
+          ..write('downloadCount30Days: $downloadCount30Days, ')
+          ..write('likeCount: $likeCount, ')
+          ..write('grantedPoints: $grantedPoints, ')
+          ..write('popularityScore: $popularityScore, ')
+          ..write('maxPoints: $maxPoints, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -1348,6 +1633,11 @@ typedef $$PackageDataTableTableCreateCompanionBuilder =
       Value<DateTime?> publishedDate,
       Value<String?> publishedVersion,
       Value<String?> repoUrl,
+      Value<int?> downloadCount30Days,
+      Value<int?> likeCount,
+      Value<int?> grantedPoints,
+      Value<double?> popularityScore,
+      Value<int?> maxPoints,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> rowid,
@@ -1361,6 +1651,11 @@ typedef $$PackageDataTableTableUpdateCompanionBuilder =
       Value<DateTime?> publishedDate,
       Value<String?> publishedVersion,
       Value<String?> repoUrl,
+      Value<int?> downloadCount30Days,
+      Value<int?> likeCount,
+      Value<int?> grantedPoints,
+      Value<double?> popularityScore,
+      Value<int?> maxPoints,
       Value<DateTime> createdAt,
       Value<DateTime> updatedAt,
       Value<int> rowid,
@@ -1407,6 +1702,31 @@ class $$PackageDataTableTableFilterComposer
 
   ColumnFilters<String> get repoUrl => $composableBuilder(
     column: $table.repoUrl,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get downloadCount30Days => $composableBuilder(
+    column: $table.downloadCount30Days,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get likeCount => $composableBuilder(
+    column: $table.likeCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get grantedPoints => $composableBuilder(
+    column: $table.grantedPoints,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get popularityScore => $composableBuilder(
+    column: $table.popularityScore,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get maxPoints => $composableBuilder(
+    column: $table.maxPoints,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1465,6 +1785,31 @@ class $$PackageDataTableTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get downloadCount30Days => $composableBuilder(
+    column: $table.downloadCount30Days,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get likeCount => $composableBuilder(
+    column: $table.likeCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get grantedPoints => $composableBuilder(
+    column: $table.grantedPoints,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get popularityScore => $composableBuilder(
+    column: $table.popularityScore,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get maxPoints => $composableBuilder(
+    column: $table.maxPoints,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -1515,6 +1860,27 @@ class $$PackageDataTableTableAnnotationComposer
 
   GeneratedColumn<String> get repoUrl =>
       $composableBuilder(column: $table.repoUrl, builder: (column) => column);
+
+  GeneratedColumn<int> get downloadCount30Days => $composableBuilder(
+    column: $table.downloadCount30Days,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get likeCount =>
+      $composableBuilder(column: $table.likeCount, builder: (column) => column);
+
+  GeneratedColumn<int> get grantedPoints => $composableBuilder(
+    column: $table.grantedPoints,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get popularityScore => $composableBuilder(
+    column: $table.popularityScore,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get maxPoints =>
+      $composableBuilder(column: $table.maxPoints, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -1574,6 +1940,11 @@ class $$PackageDataTableTableTableManager
                 Value<DateTime?> publishedDate = const Value.absent(),
                 Value<String?> publishedVersion = const Value.absent(),
                 Value<String?> repoUrl = const Value.absent(),
+                Value<int?> downloadCount30Days = const Value.absent(),
+                Value<int?> likeCount = const Value.absent(),
+                Value<int?> grantedPoints = const Value.absent(),
+                Value<double?> popularityScore = const Value.absent(),
+                Value<int?> maxPoints = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -1585,6 +1956,11 @@ class $$PackageDataTableTableTableManager
                 publishedDate: publishedDate,
                 publishedVersion: publishedVersion,
                 repoUrl: repoUrl,
+                downloadCount30Days: downloadCount30Days,
+                likeCount: likeCount,
+                grantedPoints: grantedPoints,
+                popularityScore: popularityScore,
+                maxPoints: maxPoints,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -1598,6 +1974,11 @@ class $$PackageDataTableTableTableManager
                 Value<DateTime?> publishedDate = const Value.absent(),
                 Value<String?> publishedVersion = const Value.absent(),
                 Value<String?> repoUrl = const Value.absent(),
+                Value<int?> downloadCount30Days = const Value.absent(),
+                Value<int?> likeCount = const Value.absent(),
+                Value<int?> grantedPoints = const Value.absent(),
+                Value<double?> popularityScore = const Value.absent(),
+                Value<int?> maxPoints = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -1609,6 +1990,11 @@ class $$PackageDataTableTableTableManager
                 publishedDate: publishedDate,
                 publishedVersion: publishedVersion,
                 repoUrl: repoUrl,
+                downloadCount30Days: downloadCount30Days,
+                likeCount: likeCount,
+                grantedPoints: grantedPoints,
+                popularityScore: popularityScore,
+                maxPoints: maxPoints,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
