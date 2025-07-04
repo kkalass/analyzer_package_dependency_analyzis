@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:drift/drift.dart';
@@ -304,6 +305,19 @@ class PackageDatabase extends _$PackageDatabase {
       updateCompanion = updateCompanion.copyWith(
         allPackagesJson: Value(allPackagesJson),
       );
+
+      // Update totalCount based on the packages JSON
+      int totalCount = 0;
+      try {
+        final packagesJson = jsonDecode(allPackagesJson) as List;
+        totalCount = packagesJson.length;
+      } catch (e) {
+        // If we can't parse JSON, keep totalCount as 0
+      }
+      
+      updateCompanion = updateCompanion.copyWith(
+        totalCount: Value(totalCount),
+      );
     }
 
     await (update(packageSearchStateTable)
@@ -319,6 +333,15 @@ class PackageDatabase extends _$PackageDatabase {
     required int currentPage,
     required bool discoveryCompleted,
   }) async {
+    // Calculate total count from the packages JSON
+    int totalCount = 0;
+    try {
+      final packagesJson = jsonDecode(allPackagesJson) as List;
+      totalCount = packagesJson.length;
+    } catch (e) {
+      // If we can't parse JSON, keep totalCount as 0
+    }
+
     await into(packageSearchStateTable).insertOnConflictUpdate(
       PackageSearchStateTableCompanion(
         searchId: Value(searchId),
@@ -331,7 +354,7 @@ class PackageDatabase extends _$PackageDatabase {
         currentIndex: Value(
           0,
         ), // Reset processing index when updating pagination
-        totalCount: Value(0), // Will be set when processing starts
+        totalCount: Value(totalCount), // Set to actual discovered packages count
         searchStarted: Value(DateTime.now()),
         lastUpdated: Value(DateTime.now()),
       ),

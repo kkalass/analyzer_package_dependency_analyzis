@@ -118,10 +118,18 @@ Future<void> performFetch(String targetPackage) async {
               targetPackage,
             )).map((pkg) => SerializablePackage(pkg.package)).toList();
 
-        // Update state to mark discovery as complete and start processing
+        // Check if discovery was actually completed by checking the saved state
+        final updatedState = await service.getSearchState(searchId);
+        if (updatedState == null || !updatedState.discoveryCompleted) {
+          // Discovery was not completed (likely due to rate limit), don't proceed to processing
+          print('Discovery was interrupted. Progress has been saved.');
+          print('Run fetch again to resume from where we left off.');
+          return;
+        }
+
+        // Discovery is now complete, mark as ready for processing
         await service.updatePaginationState(
           searchId: searchId,
-          discoveryCompleted: true,
           processingCompleted: false,
           allPackagesJson: jsonEncode(
             allPackages.map((pkg) => pkg.toJson()).toList(),
@@ -162,14 +170,22 @@ Future<void> performFetch(String targetPackage) async {
               targetPackage,
             )).map((pkg) => SerializablePackage(pkg.package)).toList();
 
+        // Check if discovery was actually completed by checking the saved state
+        final updatedState = await service.getSearchState(searchId);
+        if (updatedState == null || !updatedState.discoveryCompleted) {
+          // Discovery was not completed (likely due to rate limit), don't proceed to processing
+          print('Discovery was interrupted. Progress has been saved.');
+          print('Run fetch again to resume from where we left off.');
+          return;
+        }
+
         print(
           'Discovery completed! Found ${allPackages.length} packages total.',
         );
 
-        // Mark discovery as complete and prepare for processing
+        // Mark as ready for processing (discovery is already marked complete by pagination function)
         await service.updatePaginationState(
           searchId: searchId,
-          discoveryCompleted: true,
           processingCompleted: false,
           allPackagesJson: jsonEncode(
             allPackages.map((pkg) => pkg.toJson()).toList(),
